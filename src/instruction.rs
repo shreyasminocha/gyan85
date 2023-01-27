@@ -3,6 +3,7 @@ use crate::register::Register;
 pub type SysCall = u8;
 pub type Condition = u8;
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum Instruction {
     IMM(Register, u8),
     ADD(Register, Register),
