@@ -16,7 +16,7 @@ pub fn disassemble(bytes: Vec<u8>) -> Result<Vec<Instruction>, DisassembleError>
         .collect()
 }
 
-fn disassemble_instruction(bytes: [u8; 3]) -> Result<Instruction, DisassembleError> {
+pub fn disassemble_instruction(bytes: [u8; 3]) -> Result<Instruction, DisassembleError> {
     let [a, b, op] = bytes;
     let a_register = Register::try_from(a);
     let b_register = Register::try_from(b);
