@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "yan85-asm"
+name = "yan85"
 version = "0.1.0"

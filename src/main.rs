@@ -1,6 +1,6 @@
 use std::{env, fs, process::exit};
 
-use yan85_asm::disasm::disassemble;
+use yan85::disasm::disassemble;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
