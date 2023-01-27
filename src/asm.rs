@@ -28,37 +28,37 @@ pub fn assemble(instructions: Vec<Instruction>) -> Vec<u8> {
         .collect()
 }
 
-fn assemble_imm(register: Register, value: u8) -> Vec<u8> {
-    vec![register as u8, value, IMM]
+fn assemble_imm(register: Register, value: u8) -> [u8; 3] {
+    [register as u8, value, IMM]
 }
 
-fn assemble_stk(push: Register, pop: Register) -> Vec<u8> {
-    vec![pop as u8, push as u8, STK]
+fn assemble_stk(push: Register, pop: Register) -> [u8; 3] {
+    [pop as u8, push as u8, STK]
 }
 
-fn assemble_stm(dest: Register, src: Register) -> Vec<u8> {
-    vec![dest as u8, src as u8, STM]
+fn assemble_stm(dest: Register, src: Register) -> [u8; 3] {
+    [dest as u8, src as u8, STM]
 }
 
-fn assemble_sys(syscall: SysCall, register: Register) -> Vec<u8> {
-    vec![syscall, register as u8, SYS]
+fn assemble_sys(syscall: SysCall, register: Register) -> [u8; 3] {
+    [syscall, register as u8, SYS]
 }
 
-fn assemble_add(dest: Register, operand: Register) -> Vec<u8> {
-    vec![dest as u8, operand as u8, ADD]
+fn assemble_add(dest: Register, operand: Register) -> [u8; 3] {
+    [dest as u8, operand as u8, ADD]
 }
 
-fn assemble_cmp(a: Register, b: Register) -> Vec<u8> {
-    vec![b as u8, a as u8, CMP]
+fn assemble_cmp(a: Register, b: Register) -> [u8; 3] {
+    [b as u8, a as u8, CMP]
 }
 
-fn assemble_jmp(condition: u8, register: Register) -> Vec<u8> {
-    vec![condition, register as u8, JMP]
+fn assemble_jmp(condition: u8, register: Register) -> [u8; 3] {
+    [condition, register as u8, JMP]
 }
 
 // TODO: confirm argument order
-fn assemble_ldm(dest: Register, src: Register) -> Vec<u8> {
-    vec![src as u8, dest as u8, LDM]
+fn assemble_ldm(dest: Register, src: Register) -> [u8; 3] {
+    [src as u8, dest as u8, LDM]
 }
 
 #[cfg(test)]
