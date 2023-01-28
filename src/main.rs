@@ -1,6 +1,6 @@
 use std::{env, fs, process::exit};
 
-use yan85::disasm::disassemble;
+use yan85::{disasm::disassemble, emu::emulate};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -13,5 +13,8 @@ fn main() {
     let path = &args[1];
     let bytes = fs::read(path).expect("Unable to read file");
 
-    println!("{:?}", disassemble(bytes));
+    println!(
+        "{:?}",
+        emulate(disassemble(bytes).expect("Failed to disassemble"))
+    );
 }

@@ -6,6 +6,7 @@ pub enum Register {
     D = 0x2,
     S = 0x10,
     I = 0x4,
+    F = 0x1,
     None = 0x0,
 }
 
