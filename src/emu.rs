@@ -67,8 +67,8 @@ pub fn emulate(instructions: Vec<Instruction>) {
                     registers[register_b.to_index()];
             }
             Instruction::LDM(register_a, register_b) => {
-                memory[registers[register_a.to_index()] as usize] =
-                    registers[register_b.to_index()];
+                registers[register_a.to_index()] =
+                    memory[registers[register_b.to_index()] as usize];
             }
             Instruction::JMP(condition, register) => {
                 if registers[Register::F.to_index()] & condition != 0 {
