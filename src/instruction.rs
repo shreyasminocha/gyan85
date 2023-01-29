@@ -9,12 +9,12 @@ pub type Condition = u8;
 pub enum Instruction {
     IMM(Register, u8),
     ADD(Register, Register),
-    SYS(SysCall, Register),
-    CMP(Register, Register),
+    STK(Register, Register),
     STM(Register, Register),
     LDM(Register, Register),
+    CMP(Register, Register),
     JMP(Condition, Register),
-    STK(Register, Register),
+    SYS(SysCall, Register),
 }
 
 const L: u8 = 0x11;
@@ -30,10 +30,10 @@ impl fmt::Display for Instruction {
         match self {
             Instruction::IMM(a, b) => write!(f, "IMM {a} = {b:#02x}"),
             Instruction::ADD(a, b) => write!(f, "ADD {a} {b}"),
-            Instruction::SYS(a, b) => write!(f, "SYS {a:#02x} {b}"),
-            Instruction::CMP(a, b) => write!(f, "CMP {b} {a}"),
+            Instruction::STK(a, b) => write!(f, "STK {b} {a}"),
             Instruction::STM(a, b) => write!(f, "STM *{a} = {b}"),
             Instruction::LDM(a, b) => write!(f, "LDM {a} = *{b}"),
+            Instruction::CMP(a, b) => write!(f, "CMP {b} {a}"),
             Instruction::JMP(a, b) => {
                 let val = format!("{:#02x}", *a);
                 // TODO: fix the 'u8 to readable string' conversion
@@ -49,7 +49,7 @@ impl fmt::Display for Instruction {
                 };
                 write!(f, "JMP {cond} {b}")
             }
-            Instruction::STK(a, b) => write!(f, "STK {b} {a}"),
+            Instruction::SYS(a, b) => write!(f, "SYS {a:#02x} {b}"),
         }
     }
 }

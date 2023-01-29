@@ -1,5 +1,6 @@
 use crate::{instruction::Instruction, register::Register};
 use std::{
+    cmp,
     io::{stdin, stdout, Read, Write},
     process::exit,
 };
@@ -21,6 +22,50 @@ pub fn emulate(instructions: Vec<Instruction>) {
             Instruction::ADD(register_a, register_b) => {
                 registers[register_a.to_index()] =
                     registers[register_a.to_index()].wrapping_add(registers[register_b.to_index()]);
+            }
+            Instruction::STK(push, pop) => {
+                // TODO: handle stack {under,over}flow
+
+                if *push != Register::None {
+                    stack[registers[Register::S.to_index()] as usize] = registers[push.to_index()];
+                    registers[Register::S.to_index()] += 1;
+                }
+
+                if *pop != Register::None {
+                    registers[Register::S.to_index()] -= 1;
+                    registers[pop.to_index()] = stack[registers[Register::S.to_index()] as usize];
+                }
+            }
+            Instruction::STM(register_a, register_b) => {
+                memory[registers[register_a.to_index()] as usize] =
+                    registers[register_b.to_index()];
+            }
+            Instruction::LDM(register_a, register_b) => {
+                registers[register_a.to_index()] =
+                    memory[registers[register_b.to_index()] as usize];
+            }
+            Instruction::CMP(register_a, register_b) => {
+                let a = registers[register_a.to_index()];
+                let b = registers[register_b.to_index()];
+
+                let mut flags = 0;
+
+                match a.cmp(&b) {
+                    cmp::Ordering::Less => flags |= 0x1 | 0x10,
+                    cmp::Ordering::Greater => flags |= 0x8 | 0x10,
+                    cmp::Ordering::Equal => flags |= 0x4,
+                }
+
+                if (a == 0) && (b == 0) {
+                    flags |= 0x2;
+                }
+
+                registers[Register::F.to_index()] = flags;
+            }
+            Instruction::JMP(condition, register) => {
+                if registers[Register::F.to_index()] & condition != 0 {
+                    registers[Register::I.to_index()] = registers[register.to_index()];
+                }
             }
             Instruction::SYS(syscall, arg) => match syscall {
                 0x10 => {
@@ -49,45 +94,8 @@ pub fn emulate(instructions: Vec<Instruction>) {
                 0x8 => {
                     exit(*arg as i32);
                 }
-                _ => todo!("unimplemented syscall"),
+                _ => todo!("unimplemented syscall {syscall:#02x}"),
             },
-            Instruction::CMP(register_a, register_b) => {
-                let a = registers[register_a.to_index()];
-                let b = registers[register_b.to_index()];
-
-                registers[Register::F.to_index()] = match a.cmp(&b) {
-                    // TODO: verify that this is how the flags work
-                    std::cmp::Ordering::Less => 0x11,
-                    std::cmp::Ordering::Equal => 0x4,
-                    std::cmp::Ordering::Greater => 0x18,
-                };
-            }
-            Instruction::STM(register_a, register_b) => {
-                memory[registers[register_a.to_index()] as usize] =
-                    registers[register_b.to_index()];
-            }
-            Instruction::LDM(register_a, register_b) => {
-                registers[register_a.to_index()] =
-                    memory[registers[register_b.to_index()] as usize];
-            }
-            Instruction::JMP(condition, register) => {
-                if registers[Register::F.to_index()] & condition != 0 {
-                    registers[Register::I.to_index()] = registers[register.to_index()];
-                }
-            }
-            Instruction::STK(push, pop) => {
-                // TODO: handle stack {under,over}flow
-
-                if *push != Register::None {
-                    stack[registers[Register::S.to_index()] as usize] = registers[push.to_index()];
-                    registers[Register::S.to_index()] += 1;
-                }
-
-                if *pop != Register::None {
-                    registers[Register::S.to_index()] -= 1;
-                    registers[pop.to_index()] = stack[registers[Register::S.to_index()] as usize];
-                }
-            }
         }
     }
 }

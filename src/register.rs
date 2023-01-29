@@ -21,6 +21,7 @@ impl Register {
             0x2 => Some(Register::D),
             0x10 => Some(Register::S),
             0x4 => Some(Register::I),
+            0x1 => Some(Register::F),
             0x0 => Some(Register::None),
             _ => None,
         }
