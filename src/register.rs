@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Register {
     A = 0x20,
@@ -26,5 +28,20 @@ impl Register {
 
     pub fn to_index(self) -> usize {
         (self as u8).trailing_zeros() as usize
+    }
+}
+
+impl fmt::Display for Register {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Register::A => write!(f, "a"),
+            Register::B => write!(f, "b"),
+            Register::C => write!(f, "c"),
+            Register::D => write!(f, "d"),
+            Register::S => write!(f, "s"),
+            Register::I => write!(f, "i"),
+            Register::F => write!(f, "f"),
+            Register::None => write!(f, "NONE"),
+        }
     }
 }

@@ -12,7 +12,7 @@ pub fn emulate(instructions: Vec<Instruction>) {
     loop {
         let instruction = &instructions[registers[Register::I.to_index()] as usize];
         registers[Register::I.to_index()] += 1;
-        println!("{:?} {instruction:?}", registers[Register::I.to_index()]);
+        println!("{instruction}");
 
         match instruction {
             Instruction::IMM(register, value) => {
