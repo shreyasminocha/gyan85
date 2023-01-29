@@ -1,3 +1,4 @@
+use colored::Colorize;
 use std::fmt;
 
 use crate::constants::register::*;
@@ -37,14 +38,14 @@ impl Register {
 impl fmt::Display for Register {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Register::A => write!(f, "a"),
-            Register::B => write!(f, "b"),
-            Register::C => write!(f, "c"),
-            Register::D => write!(f, "d"),
-            Register::S => write!(f, "s"),
-            Register::I => write!(f, "i"),
-            Register::F => write!(f, "f"),
-            Register::None => write!(f, "NONE"),
+            Register::A => write!(f, "{}", "a".red()),
+            Register::B => write!(f, "{}", "b".red()),
+            Register::C => write!(f, "{}", "c".red()),
+            Register::D => write!(f, "{}", "d".red()),
+            Register::S => write!(f, "{}", "s".red()),
+            Register::I => write!(f, "{}", "i".red()),
+            Register::F => write!(f, "{}", "f".red()),
+            Register::None => write!(f, "{}", "NONE".black()),
         }
     }
 }

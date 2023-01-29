@@ -1,3 +1,4 @@
+use colored::Colorize;
 use std::fmt;
 
 use crate::{constants::flag::*, register::Register};
@@ -20,12 +21,14 @@ pub enum Instruction {
 impl fmt::Display for Instruction {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Instruction::IMM(a, b) => write!(f, "IMM {a} = {b:#02x}"),
-            Instruction::ADD(a, b) => write!(f, "ADD {a} {b}"),
-            Instruction::STK(a, b) => write!(f, "STK {b} {a}"),
-            Instruction::STM(a, b) => write!(f, "STM *{a} = {b}"),
-            Instruction::LDM(a, b) => write!(f, "LDM {a} = *{b}"),
-            Instruction::CMP(a, b) => write!(f, "CMP {b} {a}"),
+            Instruction::IMM(a, b) => {
+                write!(f, "{} {a} = {}", "IMM".green(), format!("{b:#02x}").blue())
+            }
+            Instruction::ADD(a, b) => write!(f, "{} {a} {b}", "ADD".green()),
+            Instruction::STK(a, b) => write!(f, "{} {b} {a}", "STK".green()),
+            Instruction::STM(a, b) => write!(f, "{} *{a} = {b}", "STM".green()),
+            Instruction::LDM(a, b) => write!(f, "{} {a} = *{b}", "LDM".green()),
+            Instruction::CMP(a, b) => write!(f, "{} {b} {a}", "CMP".green()),
             Instruction::JMP(a, b) => {
                 let mut flags = "".to_string();
 
@@ -48,9 +51,11 @@ impl fmt::Display for Instruction {
                     flags.push('*');
                 }
 
-                write!(f, "JMP {flags} {b}")
+                write!(f, "{} {} {b}", "JMP".green(), flags.blue())
             }
-            Instruction::SYS(a, b) => write!(f, "SYS {a:#02x} {b}"),
+            Instruction::SYS(a, b) => {
+                write!(f, "{} {} {b}", "SYS".green(), format!("{a:#02x}").blue())
+            }
         }
     }
 }
