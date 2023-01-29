@@ -51,12 +51,14 @@ pub fn disassemble_instruction(bytes: [u8; 3]) -> Result<Instruction, Disassembl
 
 #[cfg(test)]
 mod tests {
+    use crate::constants::{flag::*, opcode::*, register::*, syscall::*};
+
     use super::*;
 
     #[test]
     fn test_disassemble_imm() {
         assert_eq!(
-            disassemble_instruction([0x08, 0x69, 0x01]),
+            disassemble_instruction([C, 0x69, IMM]),
             Ok(Instruction::IMM(Register::C, 0x69))
         );
     }
@@ -64,7 +66,7 @@ mod tests {
     #[test]
     fn test_disassemble_add() {
         assert_eq!(
-            disassemble_instruction([0x40, 0x10, 0x02]),
+            disassemble_instruction([B, S, ADD]),
             Ok(Instruction::ADD(Register::B, Register::S)),
         );
     }
@@ -72,7 +74,7 @@ mod tests {
     #[test]
     fn test_disassemble_stk() {
         assert_eq!(
-            disassemble_instruction([0x04, 0x08, 0x80]),
+            disassemble_instruction([I, C, STK]),
             Ok(Instruction::STK(Register::C, Register::I))
         )
     }
@@ -80,7 +82,7 @@ mod tests {
     #[test]
     fn test_disassemble_stm() {
         assert_eq!(
-            disassemble_instruction([0x08, 0x02, 0x10]),
+            disassemble_instruction([C, D, STM]),
             Ok(Instruction::STM(Register::C, Register::D)),
         );
     }
@@ -88,7 +90,7 @@ mod tests {
     #[test]
     fn test_disassemble_ldm() {
         assert_eq!(
-            disassemble_instruction([0x40, 0x40, 0x20]),
+            disassemble_instruction([B, B, LDM]),
             Ok(Instruction::LDM(Register::B, Register::B)),
         );
     }
@@ -96,7 +98,7 @@ mod tests {
     #[test]
     fn test_disassemble_cmp() {
         assert_eq!(
-            disassemble_instruction([0x08, 0x02, 0x08]),
+            disassemble_instruction([C, D, CMP]),
             Ok(Instruction::CMP(Register::D, Register::C)),
         );
     }
@@ -104,16 +106,16 @@ mod tests {
     #[test]
     fn test_disassemble_jmp() {
         assert_eq!(
-            disassemble_instruction([0x09, 0x02, 0x40]),
-            Ok(Instruction::JMP(0x9, Register::D)),
+            disassemble_instruction([L | G, D, JMP]),
+            Ok(Instruction::JMP(L | G, Register::D)),
         );
     }
 
     #[test]
     fn test_disassemble_sys() {
         assert_eq!(
-            disassemble_instruction([0x01, 0x02, 0x04]),
-            Ok(Instruction::SYS(0x1, Register::D)),
+            disassemble_instruction([WRITE, D, SYS]),
+            Ok(Instruction::SYS(WRITE, Register::D)),
         );
     }
 }

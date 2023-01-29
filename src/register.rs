@@ -1,27 +1,29 @@
 use std::fmt;
 
+use crate::constants::register::*;
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Register {
-    A = 0x20,
-    B = 0x40,
-    C = 0x8,
-    D = 0x2,
-    S = 0x10,
-    I = 0x4,
-    F = 0x1,
+    A = A as isize,
+    B = B as isize,
+    C = C as isize,
+    D = D as isize,
+    S = S as isize,
+    I = I as isize,
+    F = F as isize,
     None = 0x0,
 }
 
 impl Register {
     pub fn try_from(register: u8) -> Option<Register> {
         match register {
-            0x20 => Some(Register::A),
-            0x40 => Some(Register::B),
-            0x8 => Some(Register::C),
-            0x2 => Some(Register::D),
-            0x10 => Some(Register::S),
-            0x4 => Some(Register::I),
-            0x1 => Some(Register::F),
+            A => Some(Register::A),
+            B => Some(Register::B),
+            C => Some(Register::C),
+            D => Some(Register::D),
+            S => Some(Register::S),
+            I => Some(Register::I),
+            F => Some(Register::F),
             0x0 => Some(Register::None),
             _ => None,
         }

@@ -1,16 +1,8 @@
 use crate::{
+    constants::opcode::*,
     instruction::{Instruction, SysCall},
     register::Register,
 };
-
-const IMM: u8 = 0x1;
-const ADD: u8 = 0x2;
-const STK: u8 = 0x80;
-const STM: u8 = 0x10;
-const LDM: u8 = 0x20;
-const CMP: u8 = 0x8;
-const JMP: u8 = 0x40;
-const SYS: u8 = 0x4;
 
 pub fn assemble(instructions: Vec<Instruction>) -> Vec<u8> {
     instructions
@@ -62,45 +54,47 @@ fn assemble_sys(syscall: SysCall, register: Register) -> [u8; 3] {
 
 #[cfg(test)]
 mod tests {
+    use crate::constants::{flag::*, register::*, syscall::*};
+
     use super::*;
 
     #[test]
     fn test_assemble_imm() {
-        assert_eq!(assemble_imm(Register::C, 0x69), [0x08, 0x69, 0x01])
+        assert_eq!(assemble_imm(Register::C, 0x69), [C, 0x69, IMM])
     }
 
     #[test]
     fn test_assemble_add() {
-        assert_eq!(assemble_add(Register::B, Register::S), [0x40, 0x10, 0x02])
+        assert_eq!(assemble_add(Register::B, Register::S), [B, S, ADD])
     }
 
     #[test]
     fn test_assemble_stk() {
-        assert_eq!(assemble_stk(Register::C, Register::I), [0x04, 0x08, 0x80])
+        assert_eq!(assemble_stk(Register::C, Register::I), [I, C, STK])
     }
 
     #[test]
     fn test_assemble_stm() {
-        assert_eq!(assemble_stm(Register::C, Register::D), [0x08, 0x02, 0x10])
+        assert_eq!(assemble_stm(Register::C, Register::D), [C, D, STM])
     }
 
     #[test]
     fn test_assemble_ldm() {
-        assert_eq!(assemble_ldm(Register::B, Register::B), [0x40, 0x40, 0x20]);
+        assert_eq!(assemble_ldm(Register::B, Register::B), [B, B, LDM]);
     }
 
     #[test]
     fn test_assemble_cmp() {
-        assert_eq!(assemble_cmp(Register::D, Register::C), [0x08, 0x02, 0x08])
+        assert_eq!(assemble_cmp(Register::C, Register::D), [D, C, CMP])
     }
 
     #[test]
     fn test_assemble_jmp() {
-        assert_eq!(assemble_jmp(0x9, Register::D), [0x09, 0x02, 0x40]);
+        assert_eq!(assemble_jmp(L | G, Register::D), [L | G, D, JMP]);
     }
 
     #[test]
     fn test_assemble_sys() {
-        assert_eq!(assemble_sys(0x1, Register::D), [0x01, 0x02, 0x04])
+        assert_eq!(assemble_sys(WRITE, Register::D), [WRITE, D, SYS])
     }
 }

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::register::Register;
+use crate::{constants::flag::*, register::Register};
 
 pub type SysCall = u8;
 pub type Condition = u8;
@@ -29,19 +29,19 @@ impl fmt::Display for Instruction {
             Instruction::JMP(a, b) => {
                 let mut flags = "".to_string();
 
-                if a & 1 != 0 {
+                if a & L != 0 {
                     flags.push('L');
                 }
-                if a & 8 != 0 {
+                if a & G != 0 {
                     flags.push('G');
                 }
-                if a & 4 != 0 {
+                if a & E != 0 {
                     flags.push('E');
                 }
-                if a & 0x10 != 0 {
+                if a & N != 0 {
                     flags.push('N');
                 }
-                if a & 2 != 0 {
+                if a & Z != 0 {
                     flags.push('Z');
                 }
                 if *a == 0 {
