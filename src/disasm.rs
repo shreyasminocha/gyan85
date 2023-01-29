@@ -1,7 +1,7 @@
 use crate::{instruction::Instruction, register::Register};
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct DisassembleError;
+pub struct DisassembleError(pub String);
 
 pub fn disassemble(bytes: Vec<u8>) -> Result<Vec<Instruction>, DisassembleError> {
     bytes
@@ -10,7 +10,7 @@ pub fn disassemble(bytes: Vec<u8>) -> Result<Vec<Instruction>, DisassembleError>
             if let [a, b, op] = inst {
                 disassemble_instruction([*a, *b, *op])
             } else {
-                Err(DisassembleError)
+                unreachable!("Chunks should be of length 3")
             }
         })
         .collect()
@@ -22,30 +22,15 @@ pub fn disassemble_instruction(bytes: [u8; 3]) -> Result<Instruction, Disassembl
     let b_register = Register::try_from(b);
 
     match op {
-        0x1 => Ok(Instruction::IMM(a_register.expect("Invalid register"), b)),
-        0x2 => Ok(Instruction::ADD(
-            a_register.expect("Invalid register"),
-            b_register.expect("Invalid register"),
-        )),
-        0x80 => Ok(Instruction::STK(
-            b_register.expect("Invalid register"),
-            a_register.expect("Invalid register"),
-        )),
-        0x10 => Ok(Instruction::STM(
-            a_register.expect("Invalid register"),
-            b_register.expect("Invalid register"),
-        )),
-        0x20 => Ok(Instruction::LDM(
-            a_register.expect("Invalid register"),
-            b_register.expect("Invalid register"),
-        )),
-        0x8 => Ok(Instruction::CMP(
-            b_register.expect("Invalid register"),
-            a_register.expect("Invalid register"),
-        )),
-        0x40 => Ok(Instruction::JMP(a, b_register.expect("Invalid register"))),
-        0x4 => Ok(Instruction::SYS(a, b_register.expect("Invalid register"))),
-        _ => Err(DisassembleError),
+        0x1 => Ok(Instruction::IMM(a_register?, b)),
+        0x2 => Ok(Instruction::ADD(a_register?, b_register?)),
+        0x80 => Ok(Instruction::STK(b_register?, a_register?)),
+        0x10 => Ok(Instruction::STM(a_register?, b_register?)),
+        0x20 => Ok(Instruction::LDM(a_register?, b_register?)),
+        0x8 => Ok(Instruction::CMP(b_register?, a_register?)),
+        0x40 => Ok(Instruction::JMP(a, b_register?)),
+        0x4 => Ok(Instruction::SYS(a, b_register?)),
+        _ => Err(DisassembleError(format!("Invalid opcode: {op:#02x}"))),
     }
 }
 

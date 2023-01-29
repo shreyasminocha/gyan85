@@ -1,6 +1,9 @@
 use clap::{Parser, Subcommand};
 use std::{fs, path::PathBuf};
-use yan85::{disasm::disassemble, emu::emulate};
+use yan85::{
+    disasm::{disassemble, DisassembleError},
+    emu::emulate,
+};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -24,28 +27,30 @@ enum Command {
     },
 }
 
-fn main() {
+fn main() -> Result<(), DisassembleError> {
     let args = Args::parse();
 
     match args.command {
         Command::Assemble { .. } => todo!(),
         Command::Disassemble { path } => {
-            let bytes = fs::read(path).expect("Unable to read file");
-            let instructions = disassemble(bytes).expect("Failed to disassemble");
+            let bytes = fs::read(path).expect("Unable to open file");
+            let instructions = disassemble(bytes)?;
 
             for instruction in instructions {
                 println!("{instruction}");
             }
+
+            Ok(())
         }
         Command::Emulate {
             path,
             show_disassembly,
         } => {
-            let bytes = fs::read(path).expect("Unable to read file");
-            emulate(
-                disassemble(bytes).expect("Failed to disassemble"),
-                show_disassembly,
-            );
+            let bytes = fs::read(path).expect("Unable to open file");
+            let disassembly = disassemble(bytes)?;
+            emulate(disassembly, show_disassembly);
+
+            Ok(())
         }
     }
 }

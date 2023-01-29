@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::fmt;
 
-use crate::constants::register::*;
+use crate::{constants::register::*, disasm::DisassembleError};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Register {
@@ -16,17 +16,17 @@ pub enum Register {
 }
 
 impl Register {
-    pub fn try_from(register: u8) -> Option<Register> {
+    pub fn try_from(register: u8) -> Result<Register, DisassembleError> {
         match register {
-            A => Some(Register::A),
-            B => Some(Register::B),
-            C => Some(Register::C),
-            D => Some(Register::D),
-            S => Some(Register::S),
-            I => Some(Register::I),
-            F => Some(Register::F),
-            0x0 => Some(Register::None),
-            _ => None,
+            A => Ok(Register::A),
+            B => Ok(Register::B),
+            C => Ok(Register::C),
+            D => Ok(Register::D),
+            S => Ok(Register::S),
+            I => Ok(Register::I),
+            F => Ok(Register::F),
+            0x0 => Ok(Register::None),
+            _ => Err(DisassembleError("Invalid register".to_string())),
         }
     }
 
