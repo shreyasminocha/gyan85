@@ -17,14 +17,6 @@ pub enum Instruction {
     SYS(SysCall, Register),
 }
 
-const L: u8 = 0x11;
-const E: u8 = 0x4;
-const G: u8 = 0x18;
-const N: u8 = L | G;
-const LE: u8 = L | E;
-const GE: u8 = G | E;
-const LEG: u8 = L | E | G;
-
 impl fmt::Display for Instruction {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -35,19 +27,28 @@ impl fmt::Display for Instruction {
             Instruction::LDM(a, b) => write!(f, "LDM {a} = *{b}"),
             Instruction::CMP(a, b) => write!(f, "CMP {b} {a}"),
             Instruction::JMP(a, b) => {
-                let val = format!("{:#02x}", *a);
-                // TODO: fix the 'u8 to readable string' conversion
-                let cond = match *a {
-                    E => "E",
-                    L => "L",
-                    G => "G",
-                    N => "N",
-                    LE => "LE",
-                    GE => "GE",
-                    LEG => "LEG",
-                    _ => &val,
-                };
-                write!(f, "JMP {cond} {b}")
+                let mut flags = "".to_string();
+
+                if a & 1 != 0 {
+                    flags.push('L');
+                }
+                if a & 8 != 0 {
+                    flags.push('G');
+                }
+                if a & 4 != 0 {
+                    flags.push('E');
+                }
+                if a & 0x10 != 0 {
+                    flags.push('N');
+                }
+                if a & 2 != 0 {
+                    flags.push('Z');
+                }
+                if *a == 0 {
+                    flags.push('*');
+                }
+
+                write!(f, "JMP {flags} {b}")
             }
             Instruction::SYS(a, b) => write!(f, "SYS {a:#02x} {b}"),
         }
