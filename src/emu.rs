@@ -12,7 +12,7 @@ use std::{
     process::exit,
 };
 
-pub fn emulate(instructions: Vec<Instruction>) {
+pub fn emulate(instructions: Vec<Instruction>, show_disassembly: bool) {
     let mut registers = [0u8; 7];
     let mut memory = [0u8; 256];
     let mut stack = [0u8; 256];
@@ -20,7 +20,10 @@ pub fn emulate(instructions: Vec<Instruction>) {
     loop {
         let instruction = &instructions[registers[Register::I.to_index()] as usize];
         registers[Register::I.to_index()] += 1;
-        println!("{instruction}");
+
+        if show_disassembly {
+            println!("{instruction}");
+        }
 
         match instruction {
             Instruction::IMM(register, value) => {
