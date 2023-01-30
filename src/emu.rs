@@ -63,7 +63,7 @@ pub fn emulate(instructions: Vec<Instruction>, show_disassembly: bool) {
                 match a.cmp(&b) {
                     cmp::Ordering::Less => flags |= L | N,
                     cmp::Ordering::Greater => flags |= G | N,
-                    cmp::Ordering::Equal => flags |= E | Z,
+                    cmp::Ordering::Equal => flags |= E,
                 }
 
                 if (a == 0) && (b == 0) {
