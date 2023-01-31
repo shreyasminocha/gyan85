@@ -1,37 +1,55 @@
 use colored::Colorize;
 use std::fmt;
 
-use crate::{constants::register::*, disasm::DisassembleError};
+use crate::{constants::Constants, disasm::DisassembleError};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[repr(u8)]
 pub enum Register {
-    A = A as isize,
-    B = B as isize,
-    C = C as isize,
-    D = D as isize,
-    S = S as isize,
-    I = I as isize,
-    F = F as isize,
-    None = 0x0,
+    A,
+    B,
+    C,
+    D,
+    S,
+    I,
+    F,
+    None,
 }
 
 impl Register {
-    pub fn try_from(register: u8) -> Result<Register, DisassembleError> {
+    pub fn try_from(register: u8, constants: Constants) -> Result<Register, DisassembleError> {
+        let r = constants.register;
+
         match register {
-            A => Ok(Register::A),
-            B => Ok(Register::B),
-            C => Ok(Register::C),
-            D => Ok(Register::D),
-            S => Ok(Register::S),
-            I => Ok(Register::I),
-            F => Ok(Register::F),
+            _ if register == r.A => Ok(Register::A),
+            _ if register == r.B => Ok(Register::B),
+            _ if register == r.C => Ok(Register::C),
+            _ if register == r.D => Ok(Register::D),
+            _ if register == r.S => Ok(Register::S),
+            _ if register == r.I => Ok(Register::I),
+            _ if register == r.F => Ok(Register::F),
             0x0 => Ok(Register::None),
             _ => Err(DisassembleError("Invalid register".to_string())),
         }
     }
 
+    pub fn to_u8(self, constants: Constants) -> u8 {
+        let r = constants.register;
+
+        match self {
+            Register::A => r.A,
+            Register::B => r.B,
+            Register::C => r.C,
+            Register::D => r.D,
+            Register::S => r.S,
+            Register::I => r.I,
+            Register::F => r.F,
+            Register::None => 0x0,
+        }
+    }
+
     pub fn to_index(self) -> usize {
-        (self as u8).trailing_zeros() as usize
+        self as usize
     }
 }
 

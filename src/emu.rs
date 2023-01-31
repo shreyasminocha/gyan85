@@ -1,18 +1,17 @@
-use crate::{
-    constants::{
-        flag::*,
-        syscall::{EXIT, READ_MEMORY, WRITE},
-    },
-    instruction::Instruction,
-    register::Register,
-};
+use crate::{constants::Constants, instruction::Instruction, register::Register};
 use std::{
     cmp,
     io::{stdin, stdout, Read, Write},
     process::exit,
 };
 
-pub fn emulate(instructions: Vec<Instruction>, show_disassembly: bool) {
+pub fn emulate(constants: Constants, instructions: Vec<Instruction>, show_disassembly: bool) {
+    let Constants {
+        flag: f,
+        syscall: s,
+        ..
+    } = constants;
+
     let mut registers = [0u8; 7];
     let mut memory = [0u8; 256];
     let mut stack = [0u8; 256];
@@ -61,13 +60,13 @@ pub fn emulate(instructions: Vec<Instruction>, show_disassembly: bool) {
                 let mut flags = 0;
 
                 match a.cmp(&b) {
-                    cmp::Ordering::Less => flags |= L | N,
-                    cmp::Ordering::Greater => flags |= G | N,
-                    cmp::Ordering::Equal => flags |= E,
+                    cmp::Ordering::Less => flags |= f.L | f.N,
+                    cmp::Ordering::Greater => flags |= f.G | f.N,
+                    cmp::Ordering::Equal => flags |= f.E,
                 }
 
                 if (a == 0) && (b == 0) {
-                    flags |= Z;
+                    flags |= f.Z;
                 }
 
                 registers[Register::F.to_index()] = flags;
@@ -78,7 +77,7 @@ pub fn emulate(instructions: Vec<Instruction>, show_disassembly: bool) {
                 }
             }
             Instruction::SYS(syscall, arg) => match *syscall {
-                READ_MEMORY => {
+                _ if *syscall == s.READ_MEMORY => {
                     // TODO: use registers to determine fd
                     let c = registers[Register::C.to_index()];
                     let mut buffer = vec![0u8; c as usize];
@@ -90,7 +89,7 @@ pub fn emulate(instructions: Vec<Instruction>, show_disassembly: bool) {
                     memory[start..start + bytes_read].copy_from_slice(&buffer[..bytes_read]);
                     registers[arg.to_index()] = bytes_read as u8;
                 }
-                WRITE => {
+                _ if *syscall == s.WRITE => {
                     // TODO: use registers to determine fd
                     let b = registers[Register::B.to_index()];
                     let c = registers[Register::C.to_index()];
@@ -101,7 +100,7 @@ pub fn emulate(instructions: Vec<Instruction>, show_disassembly: bool) {
 
                     registers[arg.to_index()] = bytes_written as u8;
                 }
-                EXIT => {
+                _ if *syscall == s.EXIT => {
                     exit(*arg as i32);
                 }
                 _ => todo!("unimplemented syscall {syscall:#02x}"),

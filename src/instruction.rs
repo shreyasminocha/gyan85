@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::fmt;
 
-use crate::{constants::flag::*, register::Register};
+use crate::register::Register;
 
 pub type SysCall = u8;
 pub type Condition = u8;
@@ -30,28 +30,8 @@ impl fmt::Display for Instruction {
             Instruction::LDM(a, b) => write!(f, "{} {a} = *{b}", "LDM".green()),
             Instruction::CMP(a, b) => write!(f, "{} {b} {a}", "CMP".green()),
             Instruction::JMP(a, b) => {
-                let mut flags = "".to_string();
-
-                if a & L != 0 {
-                    flags.push('L');
-                }
-                if a & G != 0 {
-                    flags.push('G');
-                }
-                if a & E != 0 {
-                    flags.push('E');
-                }
-                if a & N != 0 {
-                    flags.push('N');
-                }
-                if a & Z != 0 {
-                    flags.push('Z');
-                }
-                if *a == 0 {
-                    flags.push('*');
-                }
-
-                write!(f, "{} {} {b}", "JMP".green(), flags.blue())
+                // TODO: acess the flag constants here and re-add the flag description
+                write!(f, "{} {} {b}", "JMP".green(), a.to_string().blue())
             }
             Instruction::SYS(a, b) => {
                 write!(f, "{} {} {b}", "SYS".green(), format!("{a:#02x}").blue())
