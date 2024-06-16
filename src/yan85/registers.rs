@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-use crate::register::Register;
+use crate::yan85::register::Register;
 
 #[derive(Default)]
 pub struct Registers([u8; 7]);

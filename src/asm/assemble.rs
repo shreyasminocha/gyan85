@@ -1,4 +1,4 @@
-use crate::{constants::Constants, instruction::Instruction};
+use crate::yan85::{constants::Constants, instruction::Instruction};
 
 /// Assembles the given instructions, converting them into bytes.
 pub fn assemble(constants: Constants, instructions: &[Instruction]) -> Vec<u8> {
@@ -27,7 +27,7 @@ fn assemble_instruction(c: Constants, instruction: &Instruction) -> [u8; 3] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
+    use crate::yan85::{
         constants::{Register, TEST_CONSTANTS as CONSTS, *},
         register::Register as Reg,
     };

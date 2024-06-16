@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::Display};
 
-use crate::{constants::Constants, instruction::Instruction, register::Register};
+use crate::yan85::{constants::Constants, instruction::Instruction, register::Register};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct DisassembleError(pub String);
@@ -55,7 +55,7 @@ pub fn disassemble_instruction(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
+    use crate::yan85::{
         constants::{Register, TEST_CONSTANTS as CONSTS, *},
         register::Register as Reg,
     };

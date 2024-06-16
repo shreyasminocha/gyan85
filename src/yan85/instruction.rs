@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::fmt;
 
-use crate::register::Register;
+use crate::yan85::register::Register;
 
 pub type SysCall = u8;
 pub type Condition = u8;

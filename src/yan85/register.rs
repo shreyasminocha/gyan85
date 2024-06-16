@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::fmt;
 
-use crate::{constants::Constants, disasm::DisassembleError};
+use crate::{disasm::DisassembleError, yan85::constants::Constants};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u8)]

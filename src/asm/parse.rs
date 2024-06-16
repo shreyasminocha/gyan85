@@ -10,7 +10,7 @@ use nom::{
     IResult,
 };
 
-use crate::{instruction::Instruction, register::Register};
+use crate::yan85::{instruction::Instruction, register::Register};
 
 /// Parses a file with Yan85 assembly instructions with one instruction per line. A wrapper around
 /// [`parse_asm_instructions`] that accepts an owned type and returns a standard result type.
