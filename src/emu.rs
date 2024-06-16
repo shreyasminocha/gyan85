@@ -1,61 +1,60 @@
-use crate::{constants::Constants, instruction::Instruction, register::Register};
+use crate::{
+    constants::Constants, instruction::Instruction, register::Register, registers::Registers,
+};
 use std::{
     cmp,
     io::{stdin, stdout, Read, Write},
     process::exit,
 };
 
-pub fn emulate(constants: Constants, instructions: Vec<Instruction>, show_disassembly: bool) {
+pub fn emulate(constants: Constants, instructions: &[Instruction], show_disassembly: bool) {
     let Constants {
         flag: f,
         syscall: s,
         ..
     } = constants;
 
-    let mut registers = [0u8; 7];
+    let mut registers = Registers::default();
     let mut memory = [0u8; 256];
     let mut stack = [0u8; 256];
 
     loop {
-        let instruction = &instructions[registers[Register::I.to_index()] as usize];
-        registers[Register::I.to_index()] += 1;
+        let instruction = &instructions[registers[Register::I] as usize];
+        registers[Register::I] += 1;
 
         if show_disassembly {
             println!("{instruction}");
         }
 
-        match instruction {
+        match *instruction {
             Instruction::IMM(register, value) => {
-                registers[register.to_index()] = *value;
+                registers[register] = value;
             }
             Instruction::ADD(register_a, register_b) => {
-                registers[register_a.to_index()] =
-                    registers[register_a.to_index()].wrapping_add(registers[register_b.to_index()]);
+                registers[register_a] = registers[register_a].wrapping_add(registers[register_b]);
             }
             Instruction::STK(push, pop) => {
                 // TODO: handle stack {under,over}flow
 
-                if *push != Register::None {
-                    stack[registers[Register::S.to_index()] as usize] = registers[push.to_index()];
-                    registers[Register::S.to_index()] += 1;
+                if push != Register::None {
+                    stack[registers[Register::S] as usize] = registers[push];
+                    registers[Register::S] += 1;
                 }
 
-                if *pop != Register::None {
-                    registers[Register::S.to_index()] -= 1;
-                    registers[pop.to_index()] = stack[registers[Register::S.to_index()] as usize];
+                if pop != Register::None {
+                    registers[Register::S] -= 1;
+                    registers[pop] = stack[registers[Register::S] as usize];
                 }
             }
             Instruction::STM(register_a, register_b) => {
-                memory[registers[register_a.to_index()] as usize] =
-                    registers[register_b.to_index()];
+                memory[registers[register_a] as usize] = registers[register_b];
             }
             Instruction::LDM(register_a, register_b) => {
-                registers[register_a.to_index()] =
-                    memory[registers[register_b.to_index()] as usize];
+                registers[register_a] = memory[registers[register_b] as usize];
             }
             Instruction::CMP(register_a, register_b) => {
-                let a = registers[register_a.to_index()];
-                let b = registers[register_b.to_index()];
+                let a = registers[register_a];
+                let b = registers[register_b];
 
                 let mut flags = 0;
 
@@ -69,39 +68,39 @@ pub fn emulate(constants: Constants, instructions: Vec<Instruction>, show_disass
                     flags |= f.Z;
                 }
 
-                registers[Register::F.to_index()] = flags;
+                registers[Register::F] = flags;
             }
             Instruction::JMP(condition, register) => {
-                if registers[Register::F.to_index()] & condition != 0 {
-                    registers[Register::I.to_index()] = registers[register.to_index()];
+                if registers[Register::F] & condition != 0 {
+                    registers[Register::I] = registers[register];
                 }
             }
-            Instruction::SYS(syscall, arg) => match *syscall {
-                _ if *syscall == s.READ_MEMORY => {
+            Instruction::SYS(syscall, arg) => match syscall {
+                _ if syscall == s.READ_MEMORY => {
                     // TODO: use registers to determine fd
-                    let c = registers[Register::C.to_index()];
+                    let c = registers[Register::C];
                     let mut buffer = vec![0u8; c as usize];
                     let bytes_read = stdin()
                         .read(&mut buffer)
                         .expect("failed to read from stdin");
 
-                    let start = registers[Register::B.to_index()] as usize;
+                    let start = registers[Register::B] as usize;
                     memory[start..start + bytes_read].copy_from_slice(&buffer[..bytes_read]);
-                    registers[arg.to_index()] = bytes_read as u8;
+                    registers[arg] = bytes_read as u8;
                 }
-                _ if *syscall == s.WRITE => {
+                _ if syscall == s.WRITE => {
                     // TODO: use registers to determine fd
-                    let b = registers[Register::B.to_index()];
-                    let c = registers[Register::C.to_index()];
+                    let b = registers[Register::B];
+                    let c = registers[Register::C];
 
                     let bytes_written = stdout()
                         .write(&stack[b as usize - 1..b as usize + c as usize - 1])
                         .expect("failed to write to stdout");
 
-                    registers[arg.to_index()] = bytes_written as u8;
+                    registers[arg] = bytes_written as u8;
                 }
-                _ if *syscall == s.EXIT => {
-                    exit(*arg as i32);
+                _ if syscall == s.EXIT => {
+                    exit(arg as i32);
                 }
                 _ => todo!("unimplemented syscall {syscall:#02x}"),
             },

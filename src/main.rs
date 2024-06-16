@@ -56,7 +56,7 @@ fn main() -> Result<(), DisassembleError> {
         } => {
             let bytes = fs::read(path).expect("Unable to open file");
             let disassembly = disassemble(consts, bytes)?;
-            emulate(consts, disassembly, show_disassembly);
+            emulate(consts, &disassembly, show_disassembly);
 
             Ok(())
         }

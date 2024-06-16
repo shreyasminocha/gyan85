@@ -47,10 +47,6 @@ impl Register {
             Register::None => 0x0,
         }
     }
-
-    pub fn to_index(self) -> usize {
-        self as usize
-    }
 }
 
 impl fmt::Display for Register {
