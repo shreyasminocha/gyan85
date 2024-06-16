@@ -1,5 +1,6 @@
 use crate::yan85::{
-    constants::Constants, instruction::Instruction, register::Register, registers::Registers,
+    constants::Constants, instruction::Instruction, memory::Memory, register::Register,
+    registers::Registers, stack::Stack,
 };
 use std::{
     cmp,
@@ -15,8 +16,8 @@ pub fn emulate(constants: Constants, instructions: &[Instruction], show_disassem
     } = constants;
 
     let mut registers = Registers::default();
-    let mut memory = [0u8; 256];
-    let mut stack = [0u8; 256];
+    let mut memory = Memory::default();
+    let mut stack = Stack::default();
 
     loop {
         let instruction = &instructions[registers[Register::I] as usize];
@@ -37,20 +38,20 @@ pub fn emulate(constants: Constants, instructions: &[Instruction], show_disassem
                 // TODO: handle stack {under,over}flow
 
                 if push != Register::None {
-                    stack[registers[Register::S] as usize] = registers[push];
+                    stack[registers[Register::S]] = registers[push];
                     registers[Register::S] += 1;
                 }
 
                 if pop != Register::None {
                     registers[Register::S] -= 1;
-                    registers[pop] = stack[registers[Register::S] as usize];
+                    registers[pop] = stack[registers[Register::S]];
                 }
             }
             Instruction::STM(register_a, register_b) => {
-                memory[registers[register_a] as usize] = registers[register_b];
+                memory[registers[register_a]] = registers[register_b];
             }
             Instruction::LDM(register_a, register_b) => {
-                registers[register_a] = memory[registers[register_b] as usize];
+                registers[register_a] = memory[registers[register_b]];
             }
             Instruction::CMP(register_a, register_b) => {
                 let a = registers[register_a];
@@ -83,10 +84,12 @@ pub fn emulate(constants: Constants, instructions: &[Instruction], show_disassem
                     let bytes_read = stdin()
                         .read(&mut buffer)
                         .expect("failed to read from stdin");
+                    let bytes_read = u8::try_from(bytes_read).expect("the buffer size is a u8");
 
-                    let start = registers[Register::B] as usize;
-                    memory[start..start + bytes_read].copy_from_slice(&buffer[..bytes_read]);
-                    registers[arg] = bytes_read as u8;
+                    let start = registers[Register::B];
+                    memory[start..start + bytes_read]
+                        .copy_from_slice(&buffer[..bytes_read as usize]);
+                    registers[arg] = bytes_read;
                 }
                 _ if syscall == s.WRITE => {
                     // TODO: use registers to determine fd
@@ -94,10 +97,12 @@ pub fn emulate(constants: Constants, instructions: &[Instruction], show_disassem
                     let c = registers[Register::C];
 
                     let bytes_written = stdout()
-                        .write(&stack[b as usize - 1..b as usize + c as usize - 1])
+                        .write(&stack[b - 1..b + c - 1])
                         .expect("failed to write to stdout");
+                    let bytes_written =
+                        u8::try_from(bytes_written).expect("the range size is at most 255");
 
-                    registers[arg] = bytes_written as u8;
+                    registers[arg] = bytes_written;
                 }
                 _ if syscall == s.EXIT => {
                     exit(arg as i32);
