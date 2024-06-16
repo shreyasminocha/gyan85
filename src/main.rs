@@ -1,6 +1,8 @@
-use clap::{Parser, Subcommand};
 use std::{error::Error, fs, path::PathBuf};
-use yan85::{
+
+use clap::{Parser, Subcommand};
+
+use gyan85::{
     asm::{assemble, parse_asm_file},
     disasm::disassemble,
     emu::emulate,
