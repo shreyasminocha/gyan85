@@ -34,7 +34,9 @@ yan85 -c 20.0.yml disasm br20.0.bin
 
 ### Assembler
 
-Work-in-progress.
+```sh
+yan85 -c 20.0.yml asm br20.0.asm br20.0.bin
+```
 
 ## License
 

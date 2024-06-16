@@ -1,12 +1,14 @@
 use crate::{constants::Constants, instruction::Instruction};
 
-pub fn assemble(constants: Constants, instructions: Vec<Instruction>) -> Vec<u8> {
+/// Assembles the given instructions, converting them into bytes.
+pub fn assemble(constants: Constants, instructions: &[Instruction]) -> Vec<u8> {
     instructions
         .iter()
         .flat_map(|i| assemble_instruction(constants, i))
         .collect()
 }
 
+/// Assembles the given instruction, converting it into its three-byte data representation.
 fn assemble_instruction(c: Constants, instruction: &Instruction) -> [u8; 3] {
     let op = c.opcode;
 

@@ -1,7 +1,8 @@
 use clap::{Parser, Subcommand};
-use std::{fs, path::PathBuf};
+use std::{error::Error, fs, path::PathBuf};
 use yan85::{
-    disasm::{disassemble, DisassembleError},
+    asm::{assemble, parse_asm_file},
+    disasm::disassemble,
     emu::emulate,
 };
 
@@ -17,7 +18,10 @@ struct Args {
 #[derive(Subcommand, Debug, Clone)]
 enum Command {
     #[clap(alias = "asm")]
-    Assemble { path: PathBuf },
+    Assemble {
+        input_path: PathBuf,
+        output_path: PathBuf,
+    },
 
     #[clap(alias = "disasm")]
     Disassemble { path: PathBuf },
@@ -31,7 +35,7 @@ enum Command {
     },
 }
 
-fn main() -> Result<(), DisassembleError> {
+fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
     let constants_file = args.constants_file;
@@ -39,7 +43,18 @@ fn main() -> Result<(), DisassembleError> {
     let consts = serde_yaml::from_str(&yaml).expect("Unable to parse constants file");
 
     match args.command {
-        Command::Assemble { .. } => todo!(),
+        Command::Assemble {
+            input_path,
+            output_path,
+        } => {
+            let asm = fs::read_to_string(input_path).expect("Unable to open file");
+            let instructions = parse_asm_file(asm).unwrap();
+
+            let bytes = assemble(consts, &instructions);
+            fs::write(output_path, bytes).expect("Unable to write file");
+
+            Ok(())
+        }
         Command::Disassemble { path } => {
             let bytes = fs::read(path).expect("Unable to open file");
             let instructions = disassemble(consts, bytes)?;

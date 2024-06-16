@@ -1,7 +1,17 @@
+use std::{error::Error, fmt::Display};
+
 use crate::{constants::Constants, instruction::Instruction, register::Register};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct DisassembleError(pub String);
+
+impl Display for DisassembleError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Error for DisassembleError {}
 
 pub fn disassemble(
     constants: Constants,
