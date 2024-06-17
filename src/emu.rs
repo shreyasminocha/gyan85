@@ -109,7 +109,7 @@ pub fn emulate(
                     registers[arg] = bytes_written;
                 }
                 _ if syscall == s.EXIT => {
-                    exit(arg as i32);
+                    exit(registers[Register::A] as i32);
                 }
                 _ => todo!("unimplemented syscall {syscall:#02x}"),
             },
