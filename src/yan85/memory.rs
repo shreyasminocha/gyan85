@@ -1,10 +1,17 @@
 use std::ops::{Index, IndexMut, Range};
 
+#[derive(Debug)]
 pub struct Memory([u8; 256]);
 
 impl Default for Memory {
     fn default() -> Self {
         Self([0; 256])
+    }
+}
+
+impl From<[u8; 256]> for Memory {
+    fn from(value: [u8; 256]) -> Self {
+        Self(value)
     }
 }
 

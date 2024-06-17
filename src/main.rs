@@ -6,6 +6,7 @@ use gyan85::{
     asm::{assemble, parse_asm_file},
     disasm::disassemble,
     emu::emulate,
+    yan85::memory::Memory,
 };
 
 #[derive(Parser, Debug)]
@@ -34,6 +35,9 @@ enum Command {
 
         #[clap(short = 'd', long)]
         show_disassembly: bool,
+
+        #[clap(short = 'm', long = "memory-image")]
+        memory_image_path: Option<PathBuf>,
     },
 }
 
@@ -70,10 +74,24 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Emulate {
             path,
             show_disassembly,
+            memory_image_path,
         } => {
             let bytes = fs::read(path).expect("Unable to open file");
             let disassembly = disassemble(consts, bytes)?;
-            emulate(consts, &disassembly, show_disassembly);
+
+            let mut memory = match memory_image_path {
+                Some(path) => {
+                    let image: [u8; 256] = fs::read(path)
+                        .expect("Unable to open file")
+                        .try_into()
+                        .expect("Memory image of wrong size");
+
+                    Memory::from(image)
+                }
+                None => Memory::default(),
+            };
+
+            emulate(consts, &disassembly, show_disassembly, &mut memory);
 
             Ok(())
         }

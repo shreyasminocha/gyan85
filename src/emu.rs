@@ -8,7 +8,12 @@ use std::{
     process::exit,
 };
 
-pub fn emulate(constants: Constants, instructions: &[Instruction], show_disassembly: bool) {
+pub fn emulate(
+    constants: Constants,
+    instructions: &[Instruction],
+    show_disassembly: bool,
+    memory: &mut Memory,
+) {
     let Constants {
         flag: f,
         syscall: s,
@@ -16,7 +21,6 @@ pub fn emulate(constants: Constants, instructions: &[Instruction], show_disassem
     } = constants;
 
     let mut registers = Registers::default();
-    let mut memory = Memory::default();
     let mut stack = Stack::default();
 
     loop {
