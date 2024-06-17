@@ -101,7 +101,7 @@ pub fn emulate(
                     let c = registers[Register::C];
 
                     let bytes_written = stdout()
-                        .write(&stack[b - 1..b + c - 1])
+                        .write(&memory[b..b + c])
                         .expect("failed to write to stdout");
                     let bytes_written =
                         u8::try_from(bytes_written).expect("the range size is at most 255");
