@@ -1,4 +1,4 @@
-use std::ops::{Index, IndexMut, Range};
+use std::ops::{Index, IndexMut, Range, RangeFrom};
 
 #[derive(Debug)]
 pub struct Memory([u8; 256]);
@@ -28,6 +28,14 @@ impl Index<Range<u8>> for Memory {
 
     fn index(&self, index: Range<u8>) -> &Self::Output {
         &self.0[index.start as usize..index.end as usize]
+    }
+}
+
+impl Index<RangeFrom<u8>> for Memory {
+    type Output = [u8];
+
+    fn index(&self, index: RangeFrom<u8>) -> &Self::Output {
+        &self.0[index.start as usize..]
     }
 }
 

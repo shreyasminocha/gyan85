@@ -4,7 +4,11 @@ use crate::yan85::{
 };
 use std::{
     cmp,
-    io::{stdin, stdout, Read, Write},
+    ffi::CString,
+    fs::File,
+    io::{Read, Write},
+    mem,
+    os::fd::{AsRawFd, FromRawFd},
     process::exit,
 };
 
@@ -81,35 +85,61 @@ pub fn emulate(
                 }
             }
             Instruction::SYS(syscall, arg) => match syscall {
+                _ if syscall == s.OPEN => {
+                    let path_address = registers[Register::A];
+                    let path_bytes: Vec<u8> = memory[path_address..]
+                        .iter()
+                        .take_while(|&&b| b != 0)
+                        .copied()
+                        .collect();
+                    let path = &CString::new(path_bytes)
+                        .expect("we don't have any null bytes by construction");
+
+                    let file = File::open(path.to_str().unwrap()).expect("unable to open file");
+                    let fd = file.as_raw_fd();
+                    mem::forget(file); // don't close the fd upon dropping `file`
+
+                    registers[arg] = fd.try_into().unwrap();
+                }
                 _ if syscall == s.READ_MEMORY => {
-                    // TODO: use registers to determine fd
-                    let c = registers[Register::C];
-                    let mut buffer = vec![0u8; c as usize];
-                    let bytes_read = stdin()
-                        .read(&mut buffer)
-                        .expect("failed to read from stdin");
+                    let fd = registers[Register::A];
+                    let start = registers[Register::B];
+                    let num_bytes = registers[Register::C];
+
+                    let mut buffer = vec![0u8; num_bytes as usize];
+
+                    let mut file = unsafe { File::from_raw_fd(fd.into()) };
+                    let bytes_read = file.read(&mut buffer).expect("failed to read from stdin");
                     let bytes_read = u8::try_from(bytes_read).expect("the buffer size is a u8");
 
-                    let start = registers[Register::B];
                     memory[start..start + bytes_read]
                         .copy_from_slice(&buffer[..bytes_read as usize]);
+
                     registers[arg] = bytes_read;
                 }
                 _ if syscall == s.WRITE => {
-                    // TODO: use registers to determine fd
-                    let b = registers[Register::B];
-                    let c = registers[Register::C];
+                    let fd = registers[Register::A];
+                    let start = registers[Register::B];
+                    let size = registers[Register::C];
 
-                    let bytes_written = stdout()
-                        .write(&memory[b..b + c])
-                        .expect("failed to write to stdout");
+                    let bytes_written = unsafe {
+                        let mut file = File::from_raw_fd(fd.into());
+                        let n = file
+                            .write(&memory[start..start + size])
+                            .expect("failed to write to stdout");
+                        mem::forget(file);
+
+                        n
+                    };
+
                     let bytes_written =
                         u8::try_from(bytes_written).expect("the range size is at most 255");
 
                     registers[arg] = bytes_written;
                 }
                 _ if syscall == s.EXIT => {
-                    exit(registers[Register::A] as i32);
+                    let exit_code = registers[Register::A];
+                    exit(exit_code as i32);
                 }
                 _ => todo!("unimplemented syscall {syscall:#02x}"),
             },

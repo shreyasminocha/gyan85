@@ -43,6 +43,7 @@ pub struct Register {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Syscall {
+    pub OPEN: u8,
     pub READ_MEMORY: u8,
     pub WRITE: u8,
     pub EXIT: u8,
@@ -85,6 +86,7 @@ const TEST_REGISTERS: Register = Register {
 };
 
 const TEST_SYSCALLS: Syscall = Syscall {
+    OPEN: 0x40,
     READ_MEMORY: 0x10,
     WRITE: 0x1,
     EXIT: 0x8,
