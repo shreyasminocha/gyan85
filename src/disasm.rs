@@ -29,13 +29,17 @@ pub fn disassemble(
         .collect()
 }
 
-pub fn disassemble_instruction(
+fn disassemble_instruction(
     constants: Constants,
     bytes: [u8; 3],
 ) -> Result<Instruction, DisassembleError> {
+    let bo = constants.byte_order;
     let o = constants.opcode;
 
-    let [a, b, op] = bytes;
+    let op = bytes[bo.op as usize];
+    let a = bytes[bo.a as usize];
+    let b = bytes[bo.b as usize];
+
     let a_register = Register::try_from(a, constants);
     let b_register = Register::try_from(b, constants);
 

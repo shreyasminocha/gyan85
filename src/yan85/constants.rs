@@ -7,6 +7,7 @@ pub struct Constants {
     pub opcode: Opcode,
     pub register: Register,
     pub syscall: Syscall,
+    pub byte_order: ByteOrder,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -49,11 +50,19 @@ pub struct Syscall {
     pub EXIT: u8,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct ByteOrder {
+    pub op: u8,
+    pub a: u8,
+    pub b: u8,
+}
+
 pub const TEST_CONSTANTS: Constants = Constants {
     flag: TEST_FLAGS,
     opcode: TEST_OPCODES,
     register: TEST_REGISTERS,
     syscall: TEST_SYSCALLS,
+    byte_order: TEST_BYTE_ORDER,
 };
 
 const TEST_FLAGS: Flag = Flag {
@@ -91,3 +100,5 @@ const TEST_SYSCALLS: Syscall = Syscall {
     WRITE: 0x1,
     EXIT: 0x8,
 };
+
+const TEST_BYTE_ORDER: ByteOrder = ByteOrder { op: 2, a: 0, b: 1 };

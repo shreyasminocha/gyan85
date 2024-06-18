@@ -10,18 +10,26 @@ pub fn assemble(constants: Constants, instructions: &[Instruction]) -> Vec<u8> {
 
 /// Assembles the given instruction, converting it into its three-byte data representation.
 fn assemble_instruction(c: Constants, instruction: &Instruction) -> [u8; 3] {
-    let op = c.opcode;
+    let o = c.opcode;
+    let bo = c.byte_order;
 
-    match instruction {
-        Instruction::IMM(register, value) => [register.to_u8(c), *value, op.IMM],
-        Instruction::ADD(dest, operand) => [dest.to_u8(c), operand.to_u8(c), op.ADD],
-        Instruction::STK(push, pop) => [pop.to_u8(c), push.to_u8(c), op.STK],
-        Instruction::STM(dest, src) => [dest.to_u8(c), src.to_u8(c), op.STM],
-        Instruction::LDM(dest, src) => [src.to_u8(c), dest.to_u8(c), op.LDM],
-        Instruction::CMP(a, b) => [b.to_u8(c), a.to_u8(c), op.CMP],
-        Instruction::JMP(condition, register) => [*condition, register.to_u8(c), op.JMP],
-        Instruction::SYS(syscall, register) => [*syscall, register.to_u8(c), op.SYS],
-    }
+    let [op, a, b] = match instruction {
+        Instruction::IMM(register, value) => [o.IMM, register.to_u8(c), *value],
+        Instruction::ADD(dest, operand) => [o.ADD, dest.to_u8(c), operand.to_u8(c)],
+        Instruction::STK(push, pop) => [o.STK, pop.to_u8(c), push.to_u8(c)],
+        Instruction::STM(dest, src) => [o.STM, dest.to_u8(c), src.to_u8(c)],
+        Instruction::LDM(dest, src) => [o.LDM, src.to_u8(c), dest.to_u8(c)],
+        Instruction::CMP(a, b) => [o.CMP, b.to_u8(c), a.to_u8(c)],
+        Instruction::JMP(condition, register) => [o.JMP, *condition, register.to_u8(c)],
+        Instruction::SYS(syscall, register) => [o.SYS, *syscall, register.to_u8(c)],
+    };
+
+    let mut data = [0; 3];
+    data[bo.op as usize] = op;
+    data[bo.a as usize] = a;
+    data[bo.b as usize] = b;
+
+    data
 }
 
 #[cfg(test)]
