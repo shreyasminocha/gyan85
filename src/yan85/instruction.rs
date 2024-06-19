@@ -6,7 +6,7 @@ use crate::yan85::register::Register;
 pub type SysCall = u8;
 pub type Condition = u8;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Instruction {
     IMM(Register, u8),
     ADD(Register, Register),

@@ -6,6 +6,7 @@ use gyan85::{
     asm::{assemble, parse_asm_file},
     disasm::disassemble,
     emu::emulate,
+    emulator::Emulator,
     yan85::memory::Memory,
 };
 
@@ -79,7 +80,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let bytes = fs::read(path).expect("Unable to open file");
             let disassembly = disassemble(consts, bytes)?;
 
-            let mut memory = match memory_image_path {
+            let memory = match memory_image_path {
                 Some(path) => {
                     let image: [u8; 256] = fs::read(path)
                         .expect("Unable to open file")
@@ -91,7 +92,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 None => Memory::default(),
             };
 
-            emulate(consts, &disassembly, show_disassembly, &mut memory);
+            let mut emulator = Emulator::new(consts, disassembly, memory);
+            emulate(&mut emulator, show_disassembly);
 
             Ok(())
         }
