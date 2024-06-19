@@ -74,7 +74,7 @@ fn parse_add(asm: &str) -> IResult<&str, Instruction> {
 
 /// Parses a `STK` (stack operation, push/pop) instruction.
 ///
-/// Syntax: `STK <reg> <reg>`
+/// Syntax: `STK <pop_reg> <push_reg>`
 ///
 /// Examples:
 ///

@@ -16,7 +16,7 @@ fn assemble_instruction(c: Constants, instruction: &Instruction) -> [u8; 3] {
     let [op, a, b] = match instruction {
         Instruction::IMM(register, value) => [o.IMM, register.to_u8(c), *value],
         Instruction::ADD(dest, operand) => [o.ADD, dest.to_u8(c), operand.to_u8(c)],
-        Instruction::STK(push, pop) => [o.STK, pop.to_u8(c), push.to_u8(c)],
+        Instruction::STK(pop, push) => [o.STK, pop.to_u8(c), push.to_u8(c)],
         Instruction::STM(dest, src) => [o.STM, dest.to_u8(c), src.to_u8(c)],
         Instruction::LDM(dest, src) => [o.LDM, src.to_u8(c), dest.to_u8(c)],
         Instruction::CMP(a, b) => [o.CMP, b.to_u8(c), a.to_u8(c)],
@@ -65,7 +65,7 @@ mod tests {
     fn test_assemble_stk() {
         assert_eq!(
             assemble_instruction(CONSTS, &Instruction::STK(Reg::C, Reg::I)),
-            [R.I, R.C, O.STK]
+            [R.C, R.I, O.STK]
         )
     }
 

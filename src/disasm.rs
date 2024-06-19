@@ -46,10 +46,10 @@ fn disassemble_instruction(
     match op {
         _ if op == o.IMM => Ok(Instruction::IMM(a_register?, b)),
         _ if op == o.ADD => Ok(Instruction::ADD(a_register?, b_register?)),
-        _ if op == o.STK => Ok(Instruction::STK(b_register?, a_register?)),
+        _ if op == o.STK => Ok(Instruction::STK(a_register?, b_register?)),
         _ if op == o.STM => Ok(Instruction::STM(a_register?, b_register?)),
         _ if op == o.LDM => Ok(Instruction::LDM(a_register?, b_register?)),
-        _ if op == o.CMP => Ok(Instruction::CMP(b_register?, a_register?)),
+        _ if op == o.CMP => Ok(Instruction::CMP(a_register?, b_register?)),
         _ if op == o.JMP => Ok(Instruction::JMP(a, b_register?)),
         _ if op == o.SYS => Ok(Instruction::SYS(a, b_register?)),
         _ => Err(DisassembleError(format!("Invalid opcode: {op:#02x}"))),
@@ -88,7 +88,7 @@ mod tests {
     #[test]
     fn test_disassemble_stk() {
         assert_eq!(
-            disassemble_instruction(CONSTS, [R.I, R.C, O.STK]),
+            disassemble_instruction(CONSTS, [R.C, R.I, O.STK]),
             Ok(Instruction::STK(Reg::C, Reg::I))
         )
     }
@@ -113,7 +113,7 @@ mod tests {
     fn test_disassemble_cmp() {
         assert_eq!(
             disassemble_instruction(CONSTS, [R.C, R.D, O.CMP]),
-            Ok(Instruction::CMP(Reg::D, Reg::C)),
+            Ok(Instruction::CMP(Reg::C, Reg::D)),
         );
     }
 

@@ -76,7 +76,7 @@ impl Emulator {
 
     /// Emulates a `STK` instruction, pushing `push`, and popping `pop` unless either
     /// [`Register::None`].
-    fn emulate_stk(&mut self, push: Register, pop: Register) {
+    fn emulate_stk(&mut self, pop: Register, push: Register) {
         // TODO: handle stack {under,over}flow
 
         if push != Register::None {
