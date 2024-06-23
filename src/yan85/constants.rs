@@ -1,7 +1,6 @@
-#![allow(non_snake_case)]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Constants {
     pub flag: Flag,
     pub opcode: Opcode,
@@ -10,7 +9,8 @@ pub struct Constants {
     pub byte_order: ByteOrder,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[allow(non_snake_case)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Flag {
     pub L: u8,
     pub G: u8,
@@ -31,7 +31,8 @@ impl Default for Flag {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[allow(non_snake_case)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Opcode {
     pub IMM: u8,
     pub ADD: u8,
@@ -58,7 +59,8 @@ impl Default for Opcode {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[allow(non_snake_case)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Register {
     pub A: u8,
     pub B: u8,
@@ -83,7 +85,8 @@ impl Default for Register {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[allow(non_snake_case)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Syscall {
     pub OPEN: u8,
     pub READ_MEMORY: u8,
@@ -102,7 +105,7 @@ impl Default for Syscall {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ByteOrder {
     pub op: u8,
     pub a: u8,
@@ -112,5 +115,20 @@ pub struct ByteOrder {
 impl Default for ByteOrder {
     fn default() -> Self {
         Self { op: 0, a: 1, b: 2 }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use super::*;
+
+    #[test]
+    fn test_example_constants_yml() {
+        let yaml = fs::read_to_string("constants.yml").unwrap();
+        let consts: Constants = serde_yaml::from_str(&yaml).unwrap();
+
+        assert_eq!(consts, Constants::default())
     }
 }
