@@ -145,10 +145,12 @@ impl Emulator {
 
         let return_value = match syscall {
             _ if syscall == s.OPEN => self.syscall_open(a),
+            _ if syscall == s.READ_CODE => self.syscall_read_code(a, b, c),
             _ if syscall == s.READ_MEMORY => self.syscall_read_memory(a, b, c),
             _ if syscall == s.WRITE => self.syscall_write(a, b, c),
+            _ if syscall == s.SLEEP => self.syscall_sleep(a),
             _ if syscall == s.EXIT => self.syscall_exit(a),
-            _ => unimplemented!("unimplemented syscall: {syscall:#02x}"),
+            _ => panic!("unsupported syscall: {syscall:#02x}"),
         };
 
         self.registers[register] = return_value;
@@ -168,6 +170,12 @@ impl Emulator {
         mem::forget(file); // don't close the fd upon dropping `file`
 
         fd.try_into().unwrap()
+    }
+
+    /// Reads up to `num_bytes` bytes from the file with file descriptor `fd` into Yan85
+    /// instructions, starting at instruction index `start`.
+    fn syscall_read_code(&mut self, fd: u8, start: u8, num_bytes: u8) -> u8 {
+        todo!("syscall read_code({fd}, {start:#02x}, {num_bytes:#02x})");
     }
 
     /// Reads up to `num_bytes` bytes from the file with file descriptor `fd` into memory, starting
@@ -198,6 +206,11 @@ impl Emulator {
         };
 
         u8::try_from(bytes_written).expect("the range size is at most 255")
+    }
+
+    /// Sleeps for `duration` seconds.
+    fn syscall_sleep(&mut self, duration: u8) -> u8 {
+        todo!("syscall sleep({duration})");
     }
 
     /// Terminates the Yan85 virtual machine.

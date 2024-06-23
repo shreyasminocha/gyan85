@@ -80,8 +80,10 @@ impl Default for Register {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Syscall {
     pub OPEN: u8,
+    pub READ_CODE: u8,
     pub READ_MEMORY: u8,
     pub WRITE: u8,
+    pub SLEEP: u8,
     pub EXIT: u8,
 }
 
@@ -89,9 +91,11 @@ impl Default for Syscall {
     fn default() -> Self {
         Self {
             OPEN: 0x1,
-            READ_MEMORY: 0x2,
-            WRITE: 0x4,
-            EXIT: 0x8,
+            READ_CODE: 0x2,
+            READ_MEMORY: 0x4,
+            WRITE: 0x8,
+            SLEEP: 0x10,
+            EXIT: 0x20,
         }
     }
 }

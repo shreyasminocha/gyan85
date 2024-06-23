@@ -24,9 +24,11 @@ register:
 
 syscall:
     OPEN: 0x1
-    READ_MEMORY: 0x2
-    WRITE: 0x4
-    EXIT: 0x8
+    READ_CODE: 0x2
+    READ_MEMORY: 0x4
+    WRITE: 0x8
+    SLEEP: 0x10
+    EXIT: 0x20
 
 flag:
     L: 0x1
