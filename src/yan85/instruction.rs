@@ -3,18 +3,45 @@ use std::fmt;
 
 use crate::yan85::register::Register;
 
+/// Yan85 syscall number.
 pub type SysCall = u8;
+
+/// Jump condition specifier.
 pub type Condition = u8;
 
+/// Mutable register.
+pub type MutRegister = Register;
+
+/// A register that holds a memory pointer.
+pub type PointerRegister = Register;
+
+/// Yan85 instruction.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Instruction {
+    /// Immediate instruction that assigns an integer to a register.
     IMM(Register, u8),
-    ADD(Register, Register),
+    /// Adds two registers.
+    ///
+    /// `ADD a b` increments the value in register `a` by the value in register `b`.
+    ADD(MutRegister, Register),
+    /// Stack instruction that performs stack operations.
+    ///
+    /// Pops values from the stack into a register and pushes values from registers into the stack.
     STK(Register, Register),
-    STM(Register, Register),
-    LDM(Register, Register),
+    /// Assigns a value to a memory location.
+    ///
+    /// `STM *a = b` assigns the value in `b` to the memory location referenced by `a`.
+    STM(PointerRegister, Register),
+    /// "Load from memory" instruction.
+    ///
+    /// `LDM a = *b` assigns the value in the memory location referenced by `b` to register `a`.
+    LDM(MutRegister, PointerRegister),
+    /// Comparison instruction.
     CMP(Register, Register),
+    /// Jumps to the instruction referenced by a register if the specified condition is met by the
+    /// value in the "flag" register.
     JMP(Condition, Register),
+    /// Syscall instruction.
     SYS(SysCall, Register),
 }
 

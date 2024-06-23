@@ -1,18 +1,38 @@
 use serde::{Deserialize, Serialize};
 
+/// Instruction encoding specification that varies from level to level.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Constants {
+    /// The byte order of the instruction 3-tuple.
     pub byte_order: ByteOrder,
+    /// The opcode constants.
     pub opcode: Opcode,
+    /// The register constants.
     pub register: Register,
+    /// The syscall numbers.
     pub syscall: Syscall,
+    /// The flag constants.
     pub flag: Flag,
 }
 
+/// Specification of the encoding order of the instruction 3-tuple.
+///
+/// The values of this structure's fields must be a permutation of {0, 1, 2}.
+///
+/// # Examples
+///
+/// ```
+/// use gyan85::yan85::constants::ByteOrder;
+///
+/// let byte_order = ByteOrder { op: 0, a: 1, b: 2 };
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ByteOrder {
+    /// Index of the byte corresponding to the opcode.
     pub op: u8,
+    /// Index of the byte corresponding to the first operand.
     pub a: u8,
+    /// Index of the byte corresponding to the second operand.
     pub b: u8,
 }
 
@@ -22,16 +42,25 @@ impl Default for ByteOrder {
     }
 }
 
+/// The constants associated with each opcode.
 #[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Opcode {
+    /// The constant for the IMM opcode.
     pub IMM: u8,
+    /// The constant for the ADD opcode.
     pub ADD: u8,
+    /// The constant for the STK opcode.
     pub STK: u8,
+    /// The constant for the STM opcode.
     pub STM: u8,
+    /// The constant for the LDM opcode.
     pub LDM: u8,
+    /// The constant for the CMP opcode.
     pub CMP: u8,
+    /// The constant for the JMP opcode.
     pub JMP: u8,
+    /// The constant for the SYS opcode.
     pub SYS: u8,
 }
 
@@ -50,15 +79,23 @@ impl Default for Opcode {
     }
 }
 
+/// The constants associated with each register.
 #[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Register {
+    /// The constant for the "a" register.
     pub A: u8,
+    /// The constant for the "b" register.
     pub B: u8,
+    /// The constant for the "c" register.
     pub C: u8,
+    /// The constant for the "d" register.
     pub D: u8,
+    /// The constant for the "s" (stack pointer) register.
     pub S: u8,
+    /// The constant for the "i" (instruction pointer) register.
     pub I: u8,
+    /// The constant for the "f" (flag) register.
     pub F: u8,
 }
 
@@ -76,14 +113,21 @@ impl Default for Register {
     }
 }
 
+/// The syscall numbers associated with each syscall.
 #[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Syscall {
+    /// The syscall number for the `OPEN` syscall.
     pub OPEN: u8,
+    /// The syscall number for the `READ_CODE` syscall.
     pub READ_CODE: u8,
+    /// The syscall number for the `READ_MEMORY` syscall.
     pub READ_MEMORY: u8,
+    /// The syscall number for the `WRITE` syscall.
     pub WRITE: u8,
+    /// The syscall number for the `SLEEP` syscall.
     pub SLEEP: u8,
+    /// The syscall number for the `EXIT` syscall.
     pub EXIT: u8,
 }
 
@@ -100,13 +144,19 @@ impl Default for Syscall {
     }
 }
 
+/// The constants associated with each flag.
 #[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Flag {
+    /// The constant for the "less than" flag.
     pub L: u8,
+    /// The constant for the "greater than" flag.
     pub G: u8,
+    /// The constant for the "equal to" flag.
     pub E: u8,
+    /// The constant for the "not equal to" flag.
     pub N: u8,
+    /// The constant for the "zeroes" flag.
     pub Z: u8,
 }
 

@@ -1,5 +1,6 @@
 use std::ops::{Index, IndexMut, Range};
 
+/// The 256-byte Yan85 stack.
 pub struct Stack([u8; 256]);
 
 impl Default for Stack {

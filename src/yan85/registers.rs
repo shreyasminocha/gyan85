@@ -2,6 +2,7 @@ use std::ops::{Index, IndexMut};
 
 use crate::yan85::register::Register;
 
+/// The seven Yan85 registers, including [Register::S], [Register::I], and [Register::F].
 #[derive(Default)]
 pub struct Registers([u8; 7]);
 

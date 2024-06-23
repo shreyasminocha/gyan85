@@ -1,5 +1,6 @@
 use std::ops::{Index, IndexMut, Range, RangeFrom};
 
+/// The 256-byte Yan85 memory.
 #[derive(Debug)]
 pub struct Memory([u8; 256]);
 

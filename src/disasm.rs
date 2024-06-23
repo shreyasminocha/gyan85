@@ -2,6 +2,7 @@ use std::{error::Error, fmt::Display};
 
 use crate::yan85::{constants::Constants, instruction::Instruction, register::Register};
 
+/// A disassembler error.
 #[derive(Debug, PartialEq, Eq)]
 pub struct DisassembleError(pub String);
 
@@ -13,6 +14,7 @@ impl Display for DisassembleError {
 
 impl Error for DisassembleError {}
 
+/// Attempts to convert the given bytes to Yan85 instructions.
 pub fn disassemble(
     constants: Constants,
     bytes: Vec<u8>,
@@ -29,6 +31,7 @@ pub fn disassemble(
         .collect()
 }
 
+/// Attempts to convert the given byte 3-tuple to a Yan85 instruction.
 fn disassemble_instruction(
     constants: Constants,
     bytes: [u8; 3],

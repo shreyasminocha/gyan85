@@ -5,18 +5,29 @@ use crate::{disasm::DisassembleError, yan85::constants::Constants};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u8)]
+/// Yan85 registers.
 pub enum Register {
+    /// General-purpose register "a".
     A,
+    /// General-purpose register "b".
     B,
+    /// General-purpose register "c".
     C,
+    /// General-purpose register "d".
     D,
+    /// Stack pointer.
     S,
+    /// Instruction pointer.
     I,
+    /// Flag register. Typically modified via CMP instructions and implicitly used in JMP
+    /// instructions.
     F,
+    /// "Null" pseudo-register. Valid exclusively in STK instructions.
     None,
 }
 
 impl Register {
+    /// Attempts to convert an 8-bit integer to a register using the given encoding constants.
     pub fn try_from(register: u8, constants: Constants) -> Result<Register, DisassembleError> {
         let r = constants.register;
 
@@ -33,6 +44,7 @@ impl Register {
         }
     }
 
+    /// Converts the register to an 8-bit integer using the given encoding constants.
     pub fn to_u8(self, constants: Constants) -> u8 {
         let r = constants.register;
 
