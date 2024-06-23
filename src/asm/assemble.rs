@@ -18,8 +18,8 @@ fn assemble_instruction(c: Constants, instruction: &Instruction) -> [u8; 3] {
         Instruction::ADD(dest, operand) => [o.ADD, dest.to_u8(c), operand.to_u8(c)],
         Instruction::STK(pop, push) => [o.STK, pop.to_u8(c), push.to_u8(c)],
         Instruction::STM(dest, src) => [o.STM, dest.to_u8(c), src.to_u8(c)],
-        Instruction::LDM(dest, src) => [o.LDM, src.to_u8(c), dest.to_u8(c)],
-        Instruction::CMP(a, b) => [o.CMP, b.to_u8(c), a.to_u8(c)],
+        Instruction::LDM(dest, src) => [o.LDM, dest.to_u8(c), src.to_u8(c)],
+        Instruction::CMP(a, b) => [o.CMP, a.to_u8(c), b.to_u8(c)],
         Instruction::JMP(condition, register) => [o.JMP, *condition, register.to_u8(c)],
         Instruction::SYS(syscall, register) => [o.SYS, *syscall, register.to_u8(c)],
     };
@@ -80,8 +80,8 @@ mod tests {
     #[test]
     fn test_assemble_ldm() {
         assert_eq!(
-            assemble_instruction(CONSTS, &Instruction::LDM(Reg::B, Reg::B)),
-            [R.B, R.B, O.LDM]
+            assemble_instruction(CONSTS, &Instruction::LDM(Reg::B, Reg::C)),
+            [R.B, R.C, O.LDM]
         );
     }
 
@@ -89,7 +89,7 @@ mod tests {
     fn test_assemble_cmp() {
         assert_eq!(
             assemble_instruction(CONSTS, &Instruction::CMP(Reg::C, Reg::D)),
-            [R.D, R.C, O.CMP]
+            [R.C, R.D, O.CMP]
         )
     }
 

@@ -25,12 +25,12 @@ impl fmt::Display for Instruction {
                 write!(f, "{} {a} = {}", "IMM".green(), format!("{b:#02x}").blue())
             }
             Instruction::ADD(a, b) => write!(f, "{} {a} {b}", "ADD".green()),
-            Instruction::STK(a, b) => write!(f, "{} {b} {a}", "STK".green()),
+            Instruction::STK(a, b) => write!(f, "{} {a} {b}", "STK".green()),
             Instruction::STM(a, b) => write!(f, "{} *{a} = {b}", "STM".green()),
             Instruction::LDM(a, b) => write!(f, "{} {a} = *{b}", "LDM".green()),
-            Instruction::CMP(a, b) => write!(f, "{} {b} {a}", "CMP".green()),
+            Instruction::CMP(a, b) => write!(f, "{} {a} {b}", "CMP".green()),
             Instruction::JMP(a, b) => {
-                // TODO: acess the flag constants here and re-add the flag description
+                // TODO: access the flag constants here and re-add the flag description
                 write!(f, "{} {} {b}", "JMP".green(), a.to_string().blue())
             }
             Instruction::SYS(a, b) => {
