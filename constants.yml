@@ -1,9 +1,7 @@
-flag:
-    L: 0x1
-    G: 0x2
-    E: 0x4
-    N: 0x8
-    Z: 0x10
+byte_order:
+    op: 0
+    a: 1
+    b: 2
 
 opcode:
     IMM: 0x1
@@ -30,7 +28,9 @@ syscall:
     WRITE: 0x4
     EXIT: 0x8
 
-byte_order:
-    op: 0
-    a: 1
-    b: 2
+flag:
+    L: 0x1
+    G: 0x2
+    E: 0x4
+    N: 0x8
+    Z: 0x10

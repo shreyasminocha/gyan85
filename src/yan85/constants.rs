@@ -2,32 +2,23 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Constants {
-    pub flag: Flag,
+    pub byte_order: ByteOrder,
     pub opcode: Opcode,
     pub register: Register,
     pub syscall: Syscall,
-    pub byte_order: ByteOrder,
+    pub flag: Flag,
 }
 
-#[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Flag {
-    pub L: u8,
-    pub G: u8,
-    pub E: u8,
-    pub N: u8,
-    pub Z: u8,
+pub struct ByteOrder {
+    pub op: u8,
+    pub a: u8,
+    pub b: u8,
 }
 
-impl Default for Flag {
+impl Default for ByteOrder {
     fn default() -> Self {
-        Self {
-            L: 0x1,
-            G: 0x2,
-            E: 0x4,
-            N: 0x8,
-            Z: 0x10,
-        }
+        Self { op: 0, a: 1, b: 2 }
     }
 }
 
@@ -105,16 +96,25 @@ impl Default for Syscall {
     }
 }
 
+#[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct ByteOrder {
-    pub op: u8,
-    pub a: u8,
-    pub b: u8,
+pub struct Flag {
+    pub L: u8,
+    pub G: u8,
+    pub E: u8,
+    pub N: u8,
+    pub Z: u8,
 }
 
-impl Default for ByteOrder {
+impl Default for Flag {
     fn default() -> Self {
-        Self { op: 0, a: 1, b: 2 }
+        Self {
+            L: 0x1,
+            G: 0x2,
+            E: 0x4,
+            N: 0x8,
+            Z: 0x10,
+        }
     }
 }
 
