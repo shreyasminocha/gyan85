@@ -1,7 +1,8 @@
 //! Command-line interface to the assembler, disassembler, and emulator.
 
-use std::{error::Error, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
+use anyhow::{anyhow, Context, Result};
 use clap::{Parser, Subcommand};
 
 use gyan85::{
@@ -59,28 +60,28 @@ enum Command {
     },
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     let args = Args::parse();
 
     let constants_file = args.constants_file;
-    let yaml = fs::read_to_string(constants_file).expect("Unable to open constants file");
-    let consts = serde_yaml::from_str(&yaml).expect("Unable to parse constants file");
+    let yaml = fs::read_to_string(constants_file)?;
+    let consts = serde_yaml::from_str(&yaml).context("Unable to parse constants file")?;
 
     match args.command {
         Command::Assemble {
             input_path,
             output_path,
         } => {
-            let asm = fs::read_to_string(input_path).expect("Unable to open file");
-            let instructions = parse_asm_file(asm).unwrap();
+            let asm = fs::read_to_string(input_path)?;
+            let instructions = parse_asm_file(asm)?;
 
             let bytes = assemble(consts, &instructions);
-            fs::write(output_path, bytes).expect("Unable to write file");
+            fs::write(output_path, bytes)?;
 
             Ok(())
         }
         Command::Disassemble { path } => {
-            let bytes = fs::read(path).expect("Unable to open file");
+            let bytes = fs::read(path)?;
             let instructions = disassemble(consts, bytes)?;
 
             for instruction in instructions {
@@ -94,15 +95,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             show_disassembly,
             memory_image_path,
         } => {
-            let bytes = fs::read(path).expect("Unable to open file");
+            let bytes = fs::read(path)?;
             let disassembly = disassemble(consts, bytes)?;
 
             let memory = match memory_image_path {
                 Some(path) => {
-                    let image: [u8; 256] = fs::read(path)
-                        .expect("Unable to open file")
+                    let image: [u8; 256] = fs::read(path)?
                         .try_into()
-                        .expect("Memory image of wrong size");
+                        .map_err(|_| anyhow!("Memory image of wrong size"))?;
 
                     Memory::from(image)
                 }
@@ -110,7 +110,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             };
 
             let mut emulator = Emulator::new(consts, disassembly, memory);
-            emulate(&mut emulator, show_disassembly);
+            emulate(&mut emulator, show_disassembly)?;
 
             Ok(())
         }

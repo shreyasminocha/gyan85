@@ -1,5 +1,4 @@
 #![warn(missing_docs)]
-#![warn(clippy::missing_docs_in_private_items)]
 
 //! Yan85 assembler, disassembler, and emulator.
 

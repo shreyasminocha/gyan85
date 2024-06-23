@@ -1,5 +1,4 @@
-use std::error::Error;
-
+use anyhow::{anyhow, Result};
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -14,8 +13,9 @@ use crate::yan85::{instruction::Instruction, register::Register};
 
 /// Parses a file with Yan85 assembly instructions with one instruction per line. A wrapper around
 /// [`parse_asm_instructions`] that accepts an owned type and returns a standard result type.
-pub fn parse_asm_file(asm: String) -> Result<Vec<Instruction>, Box<dyn Error>> {
-    let (_, instructions) = all_consuming(parse_asm_instructions)(&asm).unwrap();
+pub fn parse_asm_file(asm: String) -> Result<Vec<Instruction>> {
+    let (_, instructions) = all_consuming(parse_asm_instructions)(&asm)
+        .map_err(|e| anyhow!("Unable to parse assembly file: {}", e))?;
 
     Ok(instructions)
 }

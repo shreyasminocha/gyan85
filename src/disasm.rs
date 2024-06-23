@@ -1,24 +1,9 @@
-use std::{error::Error, fmt::Display};
+use anyhow::{bail, Result};
 
 use crate::yan85::{constants::Constants, instruction::Instruction, register::Register};
 
-/// A disassembler error.
-#[derive(Debug, PartialEq, Eq)]
-pub struct DisassembleError(pub String);
-
-impl Display for DisassembleError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl Error for DisassembleError {}
-
 /// Attempts to convert the given bytes to Yan85 instructions.
-pub fn disassemble(
-    constants: Constants,
-    bytes: Vec<u8>,
-) -> Result<Vec<Instruction>, DisassembleError> {
+pub fn disassemble(constants: Constants, bytes: Vec<u8>) -> Result<Vec<Instruction>> {
     bytes
         .chunks_exact(3)
         .map(|inst| {
@@ -32,10 +17,7 @@ pub fn disassemble(
 }
 
 /// Attempts to convert the given byte 3-tuple to a Yan85 instruction.
-fn disassemble_instruction(
-    constants: Constants,
-    bytes: [u8; 3],
-) -> Result<Instruction, DisassembleError> {
+fn disassemble_instruction(constants: Constants, bytes: [u8; 3]) -> Result<Instruction> {
     let bo = constants.byte_order;
     let o = constants.opcode;
 
@@ -55,7 +37,7 @@ fn disassemble_instruction(
         _ if op == o.CMP => Ok(Instruction::CMP(a_register?, b_register?)),
         _ if op == o.JMP => Ok(Instruction::JMP(a, b_register?)),
         _ if op == o.SYS => Ok(Instruction::SYS(a, b_register?)),
-        _ => Err(DisassembleError(format!("Invalid opcode: {op:#02x}"))),
+        _ => bail!("Invalid opcode: {op:#02x}"),
     }
 }
 
@@ -68,8 +50,8 @@ mod tests {
     fn test_disassemble_imm() {
         let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(consts, [consts.opcode.IMM, consts.register.C, 0x69]),
-            Ok(Instruction::IMM(Reg::C, 0x69))
+            disassemble_instruction(consts, [consts.opcode.IMM, consts.register.C, 0x69]).unwrap(),
+            Instruction::IMM(Reg::C, 0x69)
         );
     }
 
@@ -80,8 +62,9 @@ mod tests {
             disassemble_instruction(
                 consts,
                 [consts.opcode.ADD, consts.register.B, consts.register.S,]
-            ),
-            Ok(Instruction::ADD(Reg::B, Reg::S)),
+            )
+            .unwrap(),
+            Instruction::ADD(Reg::B, Reg::S),
         );
     }
 
@@ -92,8 +75,9 @@ mod tests {
             disassemble_instruction(
                 consts,
                 [consts.opcode.STK, consts.register.C, consts.register.I,]
-            ),
-            Ok(Instruction::STK(Reg::C, Reg::I))
+            )
+            .unwrap(),
+            Instruction::STK(Reg::C, Reg::I)
         )
     }
 
@@ -104,8 +88,9 @@ mod tests {
             disassemble_instruction(
                 consts,
                 [consts.opcode.STM, consts.register.C, consts.register.D,]
-            ),
-            Ok(Instruction::STM(Reg::C, Reg::D)),
+            )
+            .unwrap(),
+            Instruction::STM(Reg::C, Reg::D),
         );
     }
 
@@ -116,8 +101,9 @@ mod tests {
             disassemble_instruction(
                 consts,
                 [consts.opcode.LDM, consts.register.B, consts.register.B,]
-            ),
-            Ok(Instruction::LDM(Reg::B, Reg::B)),
+            )
+            .unwrap(),
+            Instruction::LDM(Reg::B, Reg::B),
         );
     }
 
@@ -128,8 +114,9 @@ mod tests {
             disassemble_instruction(
                 consts,
                 [consts.opcode.CMP, consts.register.C, consts.register.D,]
-            ),
-            Ok(Instruction::CMP(Reg::C, Reg::D)),
+            )
+            .unwrap(),
+            Instruction::CMP(Reg::C, Reg::D),
         );
     }
 
@@ -144,8 +131,9 @@ mod tests {
                     consts.flag.L | consts.flag.G,
                     consts.register.D,
                 ]
-            ),
-            Ok(Instruction::JMP(consts.flag.L | consts.flag.G, Reg::D)),
+            )
+            .unwrap(),
+            Instruction::JMP(consts.flag.L | consts.flag.G, Reg::D),
         );
     }
 
@@ -156,8 +144,9 @@ mod tests {
             disassemble_instruction(
                 consts,
                 [consts.opcode.SYS, consts.syscall.WRITE, consts.register.D,]
-            ),
-            Ok(Instruction::SYS(consts.syscall.WRITE, Reg::D)),
+            )
+            .unwrap(),
+            Instruction::SYS(consts.syscall.WRITE, Reg::D),
         );
     }
 }

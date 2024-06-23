@@ -1,7 +1,8 @@
+use anyhow::{anyhow, Result};
 use colored::Colorize;
 use std::fmt;
 
-use crate::{disasm::DisassembleError, yan85::constants::Constants};
+use crate::yan85::constants::Constants;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u8)]
@@ -28,7 +29,7 @@ pub enum Register {
 
 impl Register {
     /// Attempts to convert an 8-bit integer to a register using the given encoding constants.
-    pub fn try_from(register: u8, constants: Constants) -> Result<Register, DisassembleError> {
+    pub fn try_from(register: u8, constants: Constants) -> Result<Register> {
         let r = constants.register;
 
         match register {
@@ -40,7 +41,7 @@ impl Register {
             _ if register == r.I => Ok(Register::I),
             _ if register == r.F => Ok(Register::F),
             0x0 => Ok(Register::None),
-            _ => Err(DisassembleError("Invalid register".to_string())),
+            _ => Err(anyhow!("Invalid register: {register}")),
         }
     }
 
