@@ -208,14 +208,12 @@ impl Emulator {
 
 #[cfg(test)]
 mod tests {
-    use crate::yan85::constants::TEST_CONSTANTS;
-
     use super::*;
 
     #[test]
     fn test_imm() {
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            Constants::default(),
             vec![Instruction::IMM(Register::A, 42)],
             Memory::default(),
         );
@@ -227,7 +225,7 @@ mod tests {
     #[test]
     fn test_add() {
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            Constants::default(),
             vec![Instruction::ADD(Register::A, Register::B)],
             Memory::default(),
         );
@@ -243,7 +241,7 @@ mod tests {
     #[test]
     fn test_stk_push() {
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            Constants::default(),
             vec![Instruction::STK(Register::None, Register::C)],
             Memory::default(),
         );
@@ -262,7 +260,7 @@ mod tests {
     #[test]
     fn test_stk_pop() {
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            Constants::default(),
             vec![Instruction::STK(Register::B, Register::None)],
             Memory::default(),
         );
@@ -281,7 +279,7 @@ mod tests {
     #[test]
     fn test_stk_push_pop() {
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            Constants::default(),
             vec![Instruction::STK(Register::B, Register::C)],
             Memory::default(),
         );
@@ -300,7 +298,7 @@ mod tests {
     #[test]
     fn test_stm() {
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            Constants::default(),
             vec![Instruction::STM(Register::A, Register::D)],
             Memory::default(),
         );
@@ -315,7 +313,7 @@ mod tests {
     #[test]
     fn test_ldm() {
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            Constants::default(),
             vec![Instruction::LDM(Register::A, Register::D)],
             Memory::default(),
         );
@@ -329,10 +327,11 @@ mod tests {
 
     #[test]
     fn test_cmp_less() {
-        let Constants { flag: f, .. } = TEST_CONSTANTS;
+        let consts = Constants::default();
+        let Constants { flag: f, .. } = consts;
 
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
         );
@@ -352,10 +351,11 @@ mod tests {
 
     #[test]
     fn test_cmp_greater() {
-        let Constants { flag: f, .. } = TEST_CONSTANTS;
+        let consts = Constants::default();
+        let Constants { flag: f, .. } = consts;
 
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
         );
@@ -375,10 +375,11 @@ mod tests {
 
     #[test]
     fn test_cmp_equal() {
-        let Constants { flag: f, .. } = TEST_CONSTANTS;
+        let consts = Constants::default();
+        let Constants { flag: f, .. } = consts;
 
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
         );
@@ -398,10 +399,11 @@ mod tests {
 
     #[test]
     fn test_cmp_zeroes() {
-        let Constants { flag: f, .. } = TEST_CONSTANTS;
+        let consts = Constants::default();
+        let Constants { flag: f, .. } = consts;
 
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
         );
@@ -421,10 +423,11 @@ mod tests {
 
     #[test]
     fn test_cmp_just_one_zero() {
-        let Constants { flag: f, .. } = TEST_CONSTANTS;
+        let consts = Constants::default();
+        let Constants { flag: f, .. } = consts;
 
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
         );
@@ -438,10 +441,11 @@ mod tests {
 
     #[test]
     fn test_jmp_taken() {
-        let Constants { flag: f, .. } = TEST_CONSTANTS;
+        let consts = Constants::default();
+        let Constants { flag: f, .. } = consts;
 
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            consts,
             vec![
                 Instruction::JMP(f.L, Register::A),
                 Instruction::ADD(Register::C, Register::C),
@@ -459,10 +463,11 @@ mod tests {
 
     #[test]
     fn test_jmp_not_taken() {
-        let Constants { flag: f, .. } = TEST_CONSTANTS;
+        let consts = Constants::default();
+        let Constants { flag: f, .. } = consts;
 
         let mut emulator = Emulator::new(
-            TEST_CONSTANTS,
+            consts,
             vec![
                 Instruction::JMP(f.L, Register::A),
                 Instruction::ADD(Register::C, Register::C),

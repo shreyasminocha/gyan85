@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
 pub struct Constants {
     pub flag: Flag,
     pub opcode: Opcode,
@@ -19,6 +19,18 @@ pub struct Flag {
     pub Z: u8,
 }
 
+impl Default for Flag {
+    fn default() -> Self {
+        Self {
+            L: 0x1,
+            G: 0x2,
+            E: 0x4,
+            N: 0x8,
+            Z: 0x10,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Opcode {
     pub IMM: u8,
@@ -29,6 +41,21 @@ pub struct Opcode {
     pub CMP: u8,
     pub JMP: u8,
     pub SYS: u8,
+}
+
+impl Default for Opcode {
+    fn default() -> Self {
+        Self {
+            IMM: 0x1,
+            ADD: 0x2,
+            STK: 0x4,
+            STM: 0x8,
+            LDM: 0x10,
+            CMP: 0x20,
+            JMP: 0x40,
+            SYS: 0x80,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -42,12 +69,37 @@ pub struct Register {
     pub F: u8,
 }
 
+impl Default for Register {
+    fn default() -> Self {
+        Self {
+            A: 0x1,
+            B: 0x2,
+            C: 0x4,
+            D: 0x8,
+            S: 0x10,
+            I: 0x20,
+            F: 0x40,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Syscall {
     pub OPEN: u8,
     pub READ_MEMORY: u8,
     pub WRITE: u8,
     pub EXIT: u8,
+}
+
+impl Default for Syscall {
+    fn default() -> Self {
+        Self {
+            OPEN: 0x1,
+            READ_MEMORY: 0x2,
+            WRITE: 0x4,
+            EXIT: 0x8,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -57,48 +109,8 @@ pub struct ByteOrder {
     pub b: u8,
 }
 
-pub const TEST_CONSTANTS: Constants = Constants {
-    flag: TEST_FLAGS,
-    opcode: TEST_OPCODES,
-    register: TEST_REGISTERS,
-    syscall: TEST_SYSCALLS,
-    byte_order: TEST_BYTE_ORDER,
-};
-
-const TEST_FLAGS: Flag = Flag {
-    L: 0x1,
-    G: 0x8,
-    E: 0x4,
-    N: 0x10,
-    Z: 0x2,
-};
-
-const TEST_OPCODES: Opcode = Opcode {
-    IMM: 0x1,
-    ADD: 0x2,
-    STK: 0x80,
-    STM: 0x10,
-    LDM: 0x20,
-    CMP: 0x8,
-    JMP: 0x40,
-    SYS: 0x4,
-};
-
-const TEST_REGISTERS: Register = Register {
-    A: 0x20,
-    B: 0x40,
-    C: 0x8,
-    D: 0x2,
-    S: 0x10,
-    I: 0x4,
-    F: 0x1,
-};
-
-const TEST_SYSCALLS: Syscall = Syscall {
-    OPEN: 0x40,
-    READ_MEMORY: 0x10,
-    WRITE: 0x1,
-    EXIT: 0x8,
-};
-
-const TEST_BYTE_ORDER: ByteOrder = ByteOrder { op: 2, a: 0, b: 1 };
+impl Default for ByteOrder {
+    fn default() -> Self {
+        Self { op: 0, a: 1, b: 2 }
+    }
+}

@@ -59,77 +59,102 @@ fn disassemble_instruction(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::yan85::{
-        constants::{Register, TEST_CONSTANTS as CONSTS, *},
-        register::Register as Reg,
-    };
-
-    const R: Register = CONSTS.register;
-    const O: Opcode = CONSTS.opcode;
-    const F: Flag = CONSTS.flag;
-    const S: Syscall = CONSTS.syscall;
+    use crate::yan85::register::Register as Reg;
 
     #[test]
     fn test_disassemble_imm() {
+        let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(CONSTS, [R.C, 0x69, O.IMM]),
+            disassemble_instruction(consts, [consts.opcode.IMM, consts.register.C, 0x69]),
             Ok(Instruction::IMM(Reg::C, 0x69))
         );
     }
 
     #[test]
     fn test_disassemble_add() {
+        let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(CONSTS, [R.B, R.S, O.ADD]),
+            disassemble_instruction(
+                consts,
+                [consts.opcode.ADD, consts.register.B, consts.register.S,]
+            ),
             Ok(Instruction::ADD(Reg::B, Reg::S)),
         );
     }
 
     #[test]
     fn test_disassemble_stk() {
+        let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(CONSTS, [R.C, R.I, O.STK]),
+            disassemble_instruction(
+                consts,
+                [consts.opcode.STK, consts.register.C, consts.register.I,]
+            ),
             Ok(Instruction::STK(Reg::C, Reg::I))
         )
     }
 
     #[test]
     fn test_disassemble_stm() {
+        let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(CONSTS, [R.C, R.D, O.STM]),
+            disassemble_instruction(
+                consts,
+                [consts.opcode.STM, consts.register.C, consts.register.D,]
+            ),
             Ok(Instruction::STM(Reg::C, Reg::D)),
         );
     }
 
     #[test]
     fn test_disassemble_ldm() {
+        let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(CONSTS, [R.B, R.B, O.LDM]),
+            disassemble_instruction(
+                consts,
+                [consts.opcode.LDM, consts.register.B, consts.register.B,]
+            ),
             Ok(Instruction::LDM(Reg::B, Reg::B)),
         );
     }
 
     #[test]
     fn test_disassemble_cmp() {
+        let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(CONSTS, [R.C, R.D, O.CMP]),
+            disassemble_instruction(
+                consts,
+                [consts.opcode.CMP, consts.register.C, consts.register.D,]
+            ),
             Ok(Instruction::CMP(Reg::C, Reg::D)),
         );
     }
 
     #[test]
     fn test_disassemble_jmp() {
+        let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(CONSTS, [F.L | F.G, R.D, O.JMP]),
-            Ok(Instruction::JMP(F.L | F.G, Reg::D)),
+            disassemble_instruction(
+                consts,
+                [
+                    consts.opcode.JMP,
+                    consts.flag.L | consts.flag.G,
+                    consts.register.D,
+                ]
+            ),
+            Ok(Instruction::JMP(consts.flag.L | consts.flag.G, Reg::D)),
         );
     }
 
     #[test]
     fn test_disassemble_sys() {
+        let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(CONSTS, [S.WRITE, R.D, O.SYS]),
-            Ok(Instruction::SYS(S.WRITE, Reg::D)),
+            disassemble_instruction(
+                consts,
+                [consts.opcode.SYS, consts.syscall.WRITE, consts.register.D,]
+            ),
+            Ok(Instruction::SYS(consts.syscall.WRITE, Reg::D)),
         );
     }
 }
