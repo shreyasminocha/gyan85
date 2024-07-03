@@ -56,7 +56,7 @@ impl Emulator {
         match instruction {
             Instruction::IMM(register, value) => self.emulate_imm(register, value),
             Instruction::ADD(a, b) => self.emulate_add(a, b),
-            Instruction::STK(push, pop) => self.emulate_stk(push, pop),
+            Instruction::STK(pop, push) => self.emulate_stk(pop, push),
             Instruction::STM(a, b) => self.emulate_stm(a, b),
             Instruction::LDM(a, b) => self.emulate_ldm(a, b),
             Instruction::CMP(a, b) => self.emulate_cmp(a, b),
@@ -81,15 +81,13 @@ impl Emulator {
     /// Emulates a `STK` instruction, pushing `push`, and popping `pop` unless either
     /// [`Register::None`].
     fn emulate_stk(&mut self, pop: Register, push: Register) -> Result<()> {
-        // TODO: handle stack {under,over}flow
-
         if push != Register::None {
             self.stack[self.registers[Register::S]] = self.registers[push];
-            self.registers[Register::S] += 1;
+            self.registers[Register::S] = self.registers[Register::S].wrapping_add(1);
         }
 
         if pop != Register::None {
-            self.registers[Register::S] -= 1;
+            self.registers[Register::S] = self.registers[Register::S].wrapping_sub(1);
             self.registers[pop] = self.stack[self.registers[Register::S]];
         }
 
