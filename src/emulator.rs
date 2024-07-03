@@ -6,6 +6,8 @@ use std::{
     mem,
     os::fd::{AsRawFd, FromRawFd},
     process::exit,
+    thread,
+    time::Duration,
 };
 
 use anyhow::Result;
@@ -216,9 +218,10 @@ impl Emulator {
         Ok(u8::try_from(bytes_written).expect("the range size is at most 255"))
     }
 
-    /// Sleeps for `duration` seconds.
-    fn syscall_sleep(&mut self, duration: u8) -> Result<u8> {
-        todo!("syscall sleep({duration})");
+    /// Sleeps for `duration_secs` seconds.
+    fn syscall_sleep(&mut self, duration_secs: u8) -> Result<u8> {
+        thread::sleep(Duration::from_secs(duration_secs.into()));
+        Ok(0)
     }
 
     /// Terminates the Yan85 virtual machine.
