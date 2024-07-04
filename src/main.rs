@@ -96,7 +96,6 @@ fn main() -> Result<()> {
             memory_image_path,
         } => {
             let bytes = fs::read(path)?;
-            let disassembly = disassemble(bytes, consts)?;
 
             let memory = match memory_image_path {
                 Some(path) => {
@@ -109,7 +108,7 @@ fn main() -> Result<()> {
                 None => Memory::default(),
             };
 
-            let mut emulator = Emulator::new(consts, disassembly, memory);
+            let mut emulator = Emulator::new(consts, bytes.try_into()?, memory);
             emulate(&mut emulator, show_disassembly)?;
 
             Ok(())

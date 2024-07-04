@@ -22,7 +22,7 @@ pub fn disassemble(bytes: Vec<u8>, constants: Constants) -> Result<Vec<Instructi
 }
 
 /// Attempts to convert the given byte 3-tuple to a Yan85 instruction.
-fn disassemble_instruction(bytes: [u8; 3], constants: Constants) -> Result<Instruction> {
+pub fn disassemble_instruction(bytes: [u8; 3], constants: Constants) -> Result<Instruction> {
     let bo = constants.byte_order;
     let o = constants.opcode;
 

@@ -12,23 +12,28 @@ use std::{
 
 use anyhow::{bail, Result};
 
-use crate::yan85::{
-    constants::{Constants, Decodable, Encodable},
-    flags::Flags,
-    instruction::Instruction,
-    memory::Memory,
-    register::Register,
-    registers::Registers,
-    stack::Stack,
-    syscall::Syscall,
+use crate::{
+    asm::assemble,
+    disasm::disassemble_instruction,
+    yan85::{
+        code::Code,
+        constants::{Constants, Decodable, Encodable},
+        flags::Flags,
+        instruction::Instruction,
+        memory::Memory,
+        register::Register,
+        registers::Registers,
+        stack::Stack,
+        syscall::Syscall,
+    },
 };
 
 /// A Yan85 emulator.
 pub struct Emulator {
     /// Encoding constants.
     constants: Constants,
-    /// Instructions to emulate.
-    instructions: Vec<Instruction>,
+    /// The Yan85 machine code to emulate.
+    code: Code,
     /// The Yan85 registers.
     registers: Registers,
     /// The Yan85 stack.
@@ -39,19 +44,40 @@ pub struct Emulator {
 
 impl Emulator {
     /// Constructs a new emulator instance.
-    pub fn new(constants: Constants, instructions: Vec<Instruction>, memory: Memory) -> Self {
+    pub fn new(constants: Constants, code: Code, memory: Memory) -> Self {
         Self {
             constants,
-            instructions,
+            code,
             registers: Registers::default(),
             stack: Stack::default(),
             memory,
         }
     }
 
+    /// Attempts to construct a new emulator instance from (disassembled) instructions.
+    pub fn from_instructions(
+        constants: Constants,
+        instructions: Vec<Instruction>,
+        memory: Memory,
+    ) -> Result<Self> {
+        let code = assemble(&instructions, constants);
+
+        Ok(Self {
+            constants,
+            code: code.try_into()?,
+            registers: Registers::default(),
+            stack: Stack::default(),
+            memory,
+        })
+    }
+
     /// Steps through the next instruction.
     pub fn step(&mut self) -> Result<Instruction> {
-        let instruction = self.instructions[self.registers[Register::I] as usize];
+        let instruction = disassemble_instruction(
+            self.code.get_instruction(self.registers[Register::I]),
+            self.constants,
+        )?;
+
         self.registers[Register::I] += 1;
 
         self.emulate_instruction(instruction)?;
@@ -256,11 +282,12 @@ mod tests {
 
     #[test]
     fn test_imm() {
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             Constants::default(),
             vec![Instruction::IMM(Register::A, 42)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.step().unwrap();
         assert_eq!(emulator.registers[Register::A], 42);
@@ -268,11 +295,12 @@ mod tests {
 
     #[test]
     fn test_add() {
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             Constants::default(),
             vec![Instruction::ADD(Register::A, Register::B)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::A] = 42;
         emulator.registers[Register::B] = 24;
@@ -284,11 +312,12 @@ mod tests {
 
     #[test]
     fn test_stk_push() {
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             Constants::default(),
             vec![Instruction::STK(None, Some(Register::C))],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::C] = 42;
 
@@ -303,11 +332,12 @@ mod tests {
 
     #[test]
     fn test_stk_pop() {
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             Constants::default(),
             vec![Instruction::STK(Some(Register::B), None)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.stack[emulator.registers[Register::S]] = 42;
         emulator.registers[Register::S] += 1;
@@ -322,11 +352,12 @@ mod tests {
 
     #[test]
     fn test_stk_push_pop() {
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             Constants::default(),
             vec![Instruction::STK(Some(Register::B), Some(Register::C))],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::C] = 42;
 
@@ -341,11 +372,12 @@ mod tests {
 
     #[test]
     fn test_stm() {
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             Constants::default(),
             vec![Instruction::STM(Register::A, Register::D)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::A] = 0x20;
         emulator.registers[Register::D] = 42;
@@ -356,11 +388,12 @@ mod tests {
 
     #[test]
     fn test_ldm() {
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             Constants::default(),
             vec![Instruction::LDM(Register::A, Register::D)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.memory[0x20] = 42;
         emulator.registers[Register::D] = 0x20;
@@ -374,11 +407,12 @@ mod tests {
         let consts = Constants::default();
         let Constants { flag: f, .. } = consts;
 
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::A] = 1;
         emulator.registers[Register::B] = 2;
@@ -398,11 +432,12 @@ mod tests {
         let consts = Constants::default();
         let Constants { flag: f, .. } = consts;
 
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::A] = 2;
         emulator.registers[Register::B] = 1;
@@ -422,11 +457,12 @@ mod tests {
         let consts = Constants::default();
         let Constants { flag: f, .. } = consts;
 
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::A] = 1;
         emulator.registers[Register::B] = 1;
@@ -446,11 +482,12 @@ mod tests {
         let consts = Constants::default();
         let Constants { flag: f, .. } = consts;
 
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::A] = 0;
         emulator.registers[Register::B] = 0;
@@ -470,11 +507,12 @@ mod tests {
         let consts = Constants::default();
         let Constants { flag: f, .. } = consts;
 
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             consts,
             vec![Instruction::CMP(Register::A, Register::B)],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::A] = 0;
         emulator.registers[Register::B] = 1;
@@ -488,7 +526,7 @@ mod tests {
         let consts = Constants::default();
         let Constants { flag: f, .. } = consts;
 
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             consts,
             vec![
                 Instruction::JMP("L".try_into().unwrap(), Register::A),
@@ -496,7 +534,8 @@ mod tests {
                 Instruction::ADD(Register::C, Register::C),
             ],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::F] = f.L | f.N;
         emulator.registers[Register::A] = 2;
@@ -510,7 +549,7 @@ mod tests {
         let consts = Constants::default();
         let Constants { flag: f, .. } = consts;
 
-        let mut emulator = Emulator::new(
+        let mut emulator = Emulator::from_instructions(
             consts,
             vec![
                 Instruction::JMP("L".try_into().unwrap(), Register::A),
@@ -518,7 +557,8 @@ mod tests {
                 Instruction::ADD(Register::C, Register::C),
             ],
             Memory::default(),
-        );
+        )
+        .unwrap();
 
         emulator.registers[Register::F] = f.G | f.N;
         emulator.registers[Register::A] = 2;

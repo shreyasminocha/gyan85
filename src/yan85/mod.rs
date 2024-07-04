@@ -1,3 +1,5 @@
+/// Yan85 machine code storage.
+pub mod code;
 /// Structs that describe the encodings of opcodes, syscalls, and more.
 pub mod constants;
 /// Comparison result flags.
