@@ -75,14 +75,14 @@ fn main() -> Result<()> {
             let asm = fs::read_to_string(input_path)?;
             let instructions = parse_asm_file(asm)?;
 
-            let bytes = assemble(consts, &instructions);
+            let bytes = assemble(&instructions, consts);
             fs::write(output_path, bytes)?;
 
             Ok(())
         }
         Command::Disassemble { path } => {
             let bytes = fs::read(path)?;
-            let instructions = disassemble(consts, bytes)?;
+            let instructions = disassemble(bytes, consts)?;
 
             for instruction in instructions {
                 println!("{instruction}");
@@ -96,7 +96,7 @@ fn main() -> Result<()> {
             memory_image_path,
         } => {
             let bytes = fs::read(path)?;
-            let disassembly = disassemble(consts, bytes)?;
+            let disassembly = disassemble(bytes, consts)?;
 
             let memory = match memory_image_path {
                 Some(path) => {

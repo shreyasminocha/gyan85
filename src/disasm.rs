@@ -8,12 +8,12 @@ use crate::yan85::{
 };
 
 /// Attempts to convert the given bytes to Yan85 instructions.
-pub fn disassemble(constants: Constants, bytes: Vec<u8>) -> Result<Vec<Instruction>> {
+pub fn disassemble(bytes: Vec<u8>, constants: Constants) -> Result<Vec<Instruction>> {
     bytes
         .chunks_exact(3)
         .map(|inst| {
             if let [a, b, op] = inst {
-                disassemble_instruction(constants, [*a, *b, *op])
+                disassemble_instruction([*a, *b, *op], constants)
             } else {
                 unreachable!("Chunks should be of length 3")
             }
@@ -22,7 +22,7 @@ pub fn disassemble(constants: Constants, bytes: Vec<u8>) -> Result<Vec<Instructi
 }
 
 /// Attempts to convert the given byte 3-tuple to a Yan85 instruction.
-fn disassemble_instruction(constants: Constants, bytes: [u8; 3]) -> Result<Instruction> {
+fn disassemble_instruction(bytes: [u8; 3], constants: Constants) -> Result<Instruction> {
     let bo = constants.byte_order;
     let o = constants.opcode;
 
@@ -55,7 +55,7 @@ mod tests {
     fn test_disassemble_imm() {
         let consts = Constants::default();
         assert_eq!(
-            disassemble_instruction(consts, [consts.opcode.IMM, consts.register.C, 0x69]).unwrap(),
+            disassemble_instruction([consts.opcode.IMM, consts.register.C, 0x69], consts).unwrap(),
             Instruction::IMM(Reg::C, 0x69)
         );
     }
@@ -65,8 +65,8 @@ mod tests {
         let consts = Constants::default();
         assert_eq!(
             disassemble_instruction(
-                consts,
-                [consts.opcode.ADD, consts.register.B, consts.register.S,]
+                [consts.opcode.ADD, consts.register.B, consts.register.S],
+                consts
             )
             .unwrap(),
             Instruction::ADD(Reg::B, Reg::S),
@@ -78,8 +78,8 @@ mod tests {
         let consts = Constants::default();
         assert_eq!(
             disassemble_instruction(
-                consts,
-                [consts.opcode.STK, consts.register.C, consts.register.I,]
+                [consts.opcode.STK, consts.register.C, consts.register.I],
+                consts
             )
             .unwrap(),
             Instruction::STK(Reg::C, Reg::I)
@@ -91,8 +91,8 @@ mod tests {
         let consts = Constants::default();
         assert_eq!(
             disassemble_instruction(
-                consts,
-                [consts.opcode.STM, consts.register.C, consts.register.D,]
+                [consts.opcode.STM, consts.register.C, consts.register.D],
+                consts
             )
             .unwrap(),
             Instruction::STM(Reg::C, Reg::D),
@@ -104,8 +104,8 @@ mod tests {
         let consts = Constants::default();
         assert_eq!(
             disassemble_instruction(
-                consts,
-                [consts.opcode.LDM, consts.register.B, consts.register.B,]
+                [consts.opcode.LDM, consts.register.B, consts.register.B],
+                consts
             )
             .unwrap(),
             Instruction::LDM(Reg::B, Reg::B),
@@ -117,8 +117,8 @@ mod tests {
         let consts = Constants::default();
         assert_eq!(
             disassemble_instruction(
-                consts,
-                [consts.opcode.CMP, consts.register.C, consts.register.D,]
+                [consts.opcode.CMP, consts.register.C, consts.register.D],
+                consts
             )
             .unwrap(),
             Instruction::CMP(Reg::C, Reg::D),
@@ -130,12 +130,12 @@ mod tests {
         let consts = Constants::default();
         assert_eq!(
             disassemble_instruction(
-                consts,
                 [
                     consts.opcode.JMP,
                     consts.flag.L | consts.flag.G,
                     consts.register.D,
-                ]
+                ],
+                consts
             )
             .unwrap(),
             Instruction::JMP("LG".try_into().unwrap(), Reg::D),
@@ -147,8 +147,8 @@ mod tests {
         let consts = Constants::default();
         assert_eq!(
             disassemble_instruction(
-                consts,
-                [consts.opcode.SYS, consts.syscall.WRITE, consts.register.D,]
+                [consts.opcode.SYS, consts.syscall.WRITE, consts.register.D],
+                consts
             )
             .unwrap(),
             Instruction::SYS(consts.syscall.WRITE, Reg::D),
