@@ -159,28 +159,30 @@ impl Emulator {
         Ok(())
     }
 
-    /// Emulates a `SYS` instruction, performing a Yan85 system call and placing the return value in
-    /// `register`.
-    fn emulate_sys(&mut self, syscall: u8, register: Option<Register>) -> Result<()> {
-        let syscall = Syscall::decode(syscall, self.constants)?;
+    /// Emulates a `SYS` instruction, performing Yan85 system calls and placing the return value in
+    /// `retval_register`.
+    fn emulate_sys(&mut self, syscalls: u8, retval_register: Option<Register>) -> Result<()> {
+        let syscalls = Vec::<Syscall>::decode(syscalls, self.constants)?;
 
-        let a = self.registers[Register::A];
-        let b = self.registers[Register::B];
-        let c = self.registers[Register::C];
+        for syscall in syscalls {
+            let a = self.registers[Register::A];
+            let b = self.registers[Register::B];
+            let c = self.registers[Register::C];
 
-        let return_value = match syscall {
-            Syscall::Open => self.syscall_open(a),
-            Syscall::ReadCode => self.syscall_read_code(a, b, c),
-            Syscall::ReadMemory => self.syscall_read_memory(a, b, c),
-            Syscall::Write => self.syscall_write(a, b, c),
-            Syscall::Sleep => self.syscall_sleep(a),
-            Syscall::Exit => self.syscall_exit(a),
-        };
+            let return_value = match syscall {
+                Syscall::Open => self.syscall_open(a),
+                Syscall::ReadCode => self.syscall_read_code(a, b, c),
+                Syscall::ReadMemory => self.syscall_read_memory(a, b, c),
+                Syscall::Write => self.syscall_write(a, b, c),
+                Syscall::Sleep => self.syscall_sleep(a),
+                Syscall::Exit => self.syscall_exit(a),
+            };
 
-        if let Some(register) = register {
-            self.registers[register] = return_value?;
-        } else {
-            bail!("the \"NONE\" argument is supported only for syscalls that don't return")
+            if let Some(reg) = retval_register {
+                self.registers[reg] = return_value?;
+            } else {
+                bail!("the \"NONE\" argument is supported only for syscalls that don't return")
+            }
         }
 
         Ok(())
