@@ -23,8 +23,6 @@ pub enum Register {
     /// Flag register. Typically modified via CMP instructions and implicitly used in JMP
     /// instructions.
     F,
-    /// "Null" pseudo-register. Valid exclusively in STK instructions.
-    None,
 }
 
 impl Encodable for Register {
@@ -37,7 +35,6 @@ impl Encodable for Register {
             Register::S => c.register.S,
             Register::I => c.register.I,
             Register::F => c.register.F,
-            Register::None => 0x0,
         }
     }
 }
@@ -52,7 +49,37 @@ impl Decodable for Register {
             _ if value == c.register.S => Ok(Register::S),
             _ if value == c.register.I => Ok(Register::I),
             _ if value == c.register.F => Ok(Register::F),
-            0x0 => Ok(Register::None),
+            _ => Err(anyhow!("Invalid register: {value:#02x}")),
+        }
+    }
+}
+
+impl Encodable for Option<Register> {
+    fn encode(&self, c: Constants) -> u8 {
+        match self {
+            Some(Register::A) => c.register.A,
+            Some(Register::B) => c.register.B,
+            Some(Register::C) => c.register.C,
+            Some(Register::D) => c.register.D,
+            Some(Register::S) => c.register.S,
+            Some(Register::I) => c.register.I,
+            Some(Register::F) => c.register.F,
+            None => 0x0,
+        }
+    }
+}
+
+impl Decodable for Option<Register> {
+    fn decode(value: u8, c: Constants) -> Result<Self> {
+        match value {
+            _ if value == c.register.A => Ok(Some(Register::A)),
+            _ if value == c.register.B => Ok(Some(Register::B)),
+            _ if value == c.register.C => Ok(Some(Register::C)),
+            _ if value == c.register.D => Ok(Some(Register::D)),
+            _ if value == c.register.S => Ok(Some(Register::S)),
+            _ if value == c.register.I => Ok(Some(Register::I)),
+            _ if value == c.register.F => Ok(Some(Register::F)),
+            0x0 => Ok(None),
             _ => Err(anyhow!("Invalid register: {value:#02x}")),
         }
     }
@@ -68,7 +95,6 @@ impl fmt::Display for Register {
             Register::S => write!(f, "{}", "s".red()),
             Register::I => write!(f, "{}", "i".red()),
             Register::F => write!(f, "{}", "f".red()),
-            Register::None => write!(f, "{}", "NONE".black()),
         }
     }
 }

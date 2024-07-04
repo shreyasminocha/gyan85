@@ -36,7 +36,10 @@ fn disassemble_instruction(bytes: [u8; 3], constants: Constants) -> Result<Instr
     match op {
         _ if op == o.IMM => Ok(Instruction::IMM(a_register?, b)),
         _ if op == o.ADD => Ok(Instruction::ADD(a_register?, b_register?)),
-        _ if op == o.STK => Ok(Instruction::STK(a_register?, b_register?)),
+        _ if op == o.STK => Ok(Instruction::STK(
+            Option::<Register>::decode(a, constants)?,
+            Option::<Register>::decode(b, constants)?,
+        )),
         _ if op == o.STM => Ok(Instruction::STM(a_register?, b_register?)),
         _ if op == o.LDM => Ok(Instruction::LDM(a_register?, b_register?)),
         _ if op == o.CMP => Ok(Instruction::CMP(a_register?, b_register?)),
@@ -82,7 +85,25 @@ mod tests {
                 consts
             )
             .unwrap(),
-            Instruction::STK(Reg::C, Reg::I)
+            Instruction::STK(Some(Reg::C), Some(Reg::I))
+        )
+    }
+
+    #[test]
+    fn test_disassemble_stk_none_operand() {
+        let consts = Constants::default();
+        assert_eq!(
+            disassemble_instruction([consts.opcode.STK, consts.register.C, 0], consts).unwrap(),
+            Instruction::STK(Some(Reg::C), None)
+        )
+    }
+
+    #[test]
+    fn test_disassemble_stk_none_operands() {
+        let consts = Constants::default();
+        assert_eq!(
+            disassemble_instruction([consts.opcode.STK, 0, 0], consts).unwrap(),
+            Instruction::STK(None, None)
         )
     }
 

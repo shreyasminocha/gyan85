@@ -25,7 +25,7 @@ fn test_add() {
 #[test]
 fn test_stk_push() {
     let consts = Constants::default();
-    let instructions = vec![Instruction::STK(Register::None, Register::A)];
+    let instructions = vec![Instruction::STK(None, Some(Register::A))];
     let bytes = assemble(&instructions, consts);
 
     assert_eq!(disassemble(bytes, consts).unwrap(), instructions);
@@ -34,7 +34,7 @@ fn test_stk_push() {
 #[test]
 fn test_stk_pop() {
     let consts = Constants::default();
-    let instructions = vec![Instruction::STK(Register::A, Register::None)];
+    let instructions = vec![Instruction::STK(Some(Register::A), None)];
     let bytes = assemble(&instructions, consts);
 
     assert_eq!(disassemble(bytes, consts).unwrap(), instructions);
@@ -43,7 +43,7 @@ fn test_stk_pop() {
 #[test]
 fn test_stk_push_pop() {
     let consts = Constants::default();
-    let instructions = vec![Instruction::STK(Register::A, Register::B)];
+    let instructions = vec![Instruction::STK(Some(Register::A), Some(Register::B))];
     let bytes = assemble(&instructions, consts);
 
     assert_eq!(disassemble(bytes, consts).unwrap(), instructions);

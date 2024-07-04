@@ -84,7 +84,7 @@ fn parse_add(asm: &str) -> IResult<&str, Instruction> {
 fn parse_stk(asm: &str) -> IResult<&str, Instruction> {
     let (remaining, (a, b)) = delimited(
         tuple((tag("STK"), space1)),
-        separated_pair(parse_register, space1, parse_register),
+        separated_pair(parse_optional_register, space1, parse_optional_register),
         tuple((space0, alt((line_ending, eof)))),
     )(asm)?;
 
@@ -181,7 +181,6 @@ fn parse_jmp(asm: &str) -> IResult<&str, Instruction> {
 /// Examples:
 ///
 /// - `SYS 0x20 d`
-/// - `SYS 0x8 NONE`
 /// - `SYS 0x2 d`
 fn parse_sys(asm: &str) -> IResult<&str, Instruction> {
     let (remaining, (syscall, reg)) = delimited(
@@ -193,7 +192,18 @@ fn parse_sys(asm: &str) -> IResult<&str, Instruction> {
     Ok((remaining, Instruction::SYS(syscall, reg)))
 }
 
-/// Parses a register name, including `NONE`.
+/// Parses an optional register name. Parsing `NONE` results in `None`.
+///
+/// Primarily used in [`parse_stk`].
+fn parse_optional_register(input: &str) -> IResult<&str, Option<Register>> {
+    if let Ok((remaining, reg)) = parse_register(input) {
+        Ok((remaining, Some(reg)))
+    } else {
+        value(None, tag("NONE"))(input)
+    }
+}
+
+/// Parses a register name, *not* including `NONE`.
 fn parse_register(input: &str) -> IResult<&str, Register> {
     alt((
         value(Register::A, tag("a")),
@@ -203,7 +213,6 @@ fn parse_register(input: &str) -> IResult<&str, Register> {
         value(Register::S, tag("s")),
         value(Register::I, tag("i")),
         value(Register::F, tag("f")),
-        value(Register::None, tag("NONE")),
     ))(input)
 }
 
@@ -303,6 +312,11 @@ mod tests {
     }
 
     #[test]
+    fn test_imm_none_operand() {
+        assert!(parse_asm_instruction("IMM NONE = 0").is_err());
+    }
+
+    #[test]
     fn test_add() {
         let (_, instruction) = parse_asm_instruction("ADD a b").unwrap();
         assert_eq!(instruction, Instruction::ADD(Register::A, Register::B));
@@ -314,30 +328,35 @@ mod tests {
     }
 
     #[test]
+    fn test_add_none_operand() {
+        assert!(parse_asm_instruction("ADD a NONE").is_err());
+    }
+
+    #[test]
     fn test_stk_push_pop() {
         let (_, instruction) = parse_asm_instruction("STK a b").unwrap();
-        assert_eq!(instruction, Instruction::STK(Register::A, Register::B));
+        assert_eq!(
+            instruction,
+            Instruction::STK(Some(Register::A), Some(Register::B))
+        );
     }
 
     #[test]
     fn test_stk_pop() {
         let (_, instruction) = parse_asm_instruction("STK a NONE").unwrap();
-        assert_eq!(instruction, Instruction::STK(Register::A, Register::None));
+        assert_eq!(instruction, Instruction::STK(Some(Register::A), None));
     }
 
     #[test]
     fn test_stk_push() {
         let (_, instruction) = parse_asm_instruction("STK NONE b").unwrap();
-        assert_eq!(instruction, Instruction::STK(Register::None, Register::B));
+        assert_eq!(instruction, Instruction::STK(None, Some(Register::B)));
     }
 
     #[test]
     fn test_stk_noop() {
         let (_, instruction) = parse_asm_instruction("STK NONE NONE").unwrap();
-        assert_eq!(
-            instruction,
-            Instruction::STK(Register::None, Register::None)
-        );
+        assert_eq!(instruction, Instruction::STK(None, None));
     }
 
     #[test]
@@ -409,8 +428,8 @@ mod tests {
 
     #[test]
     fn test_sys_none_operand() {
-        let (_, instruction) = parse_asm_instruction("SYS 0x8 NONE").unwrap();
-        assert_eq!(instruction, Instruction::SYS(0x8, Register::None));
+        // TODO: change if/when SYS ever supports NONE args
+        assert!(parse_asm_instruction("SYS 0x8 NONE").is_err());
     }
 
     #[test]

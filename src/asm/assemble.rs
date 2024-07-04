@@ -62,8 +62,26 @@ mod tests {
     fn test_assemble_stk() {
         let consts = Constants::default();
         assert_eq!(
-            assemble_instruction(&Instruction::STK(Reg::C, Reg::I), consts),
+            assemble_instruction(&Instruction::STK(Some(Reg::C), Some(Reg::I)), consts),
             [consts.opcode.STK, consts.register.C, consts.register.I]
+        )
+    }
+
+    #[test]
+    fn test_assemble_stk_none_operand() {
+        let consts = Constants::default();
+        assert_eq!(
+            assemble_instruction(&Instruction::STK(Some(Reg::C), None), consts),
+            [consts.opcode.STK, consts.register.C, 0]
+        )
+    }
+
+    #[test]
+    fn test_assemble_stk_none_operands() {
+        let consts = Constants::default();
+        assert_eq!(
+            assemble_instruction(&Instruction::STK(None, None), consts),
+            [consts.opcode.STK, 0, 0]
         )
     }
 

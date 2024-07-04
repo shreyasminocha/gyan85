@@ -88,15 +88,15 @@ impl Emulator {
 
     /// Emulates a `STK` instruction, pushing `push`, and popping into `pop` unless either
     /// [`Register::None`].
-    fn emulate_stk(&mut self, pop: Register, push: Register) -> Result<()> {
-        if push != Register::None {
-            self.stack[self.registers[Register::S]] = self.registers[push];
+    fn emulate_stk(&mut self, pop: Option<Register>, push: Option<Register>) -> Result<()> {
+        if let Some(src) = push {
+            self.stack[self.registers[Register::S]] = self.registers[src];
             self.registers[Register::S] = self.registers[Register::S].wrapping_add(1);
         }
 
-        if pop != Register::None {
+        if let Some(dest) = pop {
             self.registers[Register::S] = self.registers[Register::S].wrapping_sub(1);
-            self.registers[pop] = self.stack[self.registers[Register::S]];
+            self.registers[dest] = self.stack[self.registers[Register::S]];
         }
 
         Ok(())
@@ -279,7 +279,7 @@ mod tests {
     fn test_stk_push() {
         let mut emulator = Emulator::new(
             Constants::default(),
-            vec![Instruction::STK(Register::None, Register::C)],
+            vec![Instruction::STK(None, Some(Register::C))],
             Memory::default(),
         );
 
@@ -298,7 +298,7 @@ mod tests {
     fn test_stk_pop() {
         let mut emulator = Emulator::new(
             Constants::default(),
-            vec![Instruction::STK(Register::B, Register::None)],
+            vec![Instruction::STK(Some(Register::B), None)],
             Memory::default(),
         );
 
@@ -317,7 +317,7 @@ mod tests {
     fn test_stk_push_pop() {
         let mut emulator = Emulator::new(
             Constants::default(),
-            vec![Instruction::STK(Register::B, Register::C)],
+            vec![Instruction::STK(Some(Register::B), Some(Register::C))],
             Memory::default(),
         );
 

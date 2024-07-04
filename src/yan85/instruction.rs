@@ -24,7 +24,7 @@ pub enum Instruction {
     /// Stack instruction that performs stack operations.
     ///
     /// Pops values from the stack into a register and pushes values from registers into the stack.
-    STK(Register, Register),
+    STK(Option<Register>, Option<Register>),
     /// Assigns a value to a memory location.
     ///
     /// `STM *a = b` assigns the value in `b` to the memory location referenced by `a`.
@@ -49,7 +49,15 @@ impl fmt::Display for Instruction {
                 write!(f, "{} {a} = {}", "IMM".green(), format!("{b:#02x}").blue())
             }
             Instruction::ADD(a, b) => write!(f, "{} {a} {b}", "ADD".green()),
-            Instruction::STK(a, b) => write!(f, "{} {a} {b}", "STK".green()),
+            Instruction::STK(a, b) => {
+                write!(
+                    f,
+                    "{} {} {}",
+                    "STK".green(),
+                    a.map(|r| r.to_string().into()).unwrap_or("NONE".black()),
+                    b.map(|r| r.to_string().into()).unwrap_or("NONE".black())
+                )
+            }
             Instruction::STM(a, b) => write!(f, "{} *{a} = {b}", "STM".green()),
             Instruction::LDM(a, b) => write!(f, "{} {a} = *{b}", "LDM".green()),
             Instruction::CMP(a, b) => write!(f, "{} {a} {b}", "CMP".green()),
