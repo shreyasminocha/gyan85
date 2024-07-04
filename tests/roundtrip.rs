@@ -79,7 +79,7 @@ fn test_jmp() {
 #[test]
 fn test_sys() {
     let consts = Constants::default();
-    let instructions = vec![Instruction::SYS(0x1, Register::D)];
+    let instructions = vec![Instruction::SYS(0x1, Some(Register::D))];
     let bytes = assemble(&instructions, consts);
 
     assert_eq!(disassemble(bytes, consts).unwrap(), instructions);

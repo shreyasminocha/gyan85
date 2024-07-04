@@ -39,7 +39,7 @@ pub enum Instruction {
     /// value in the "flag" register.
     JMP(Flags, Register),
     /// Syscall instruction.
-    SYS(SysCall, Register),
+    SYS(SysCall, Option<Register>),
 }
 
 impl fmt::Display for Instruction {
@@ -62,11 +62,16 @@ impl fmt::Display for Instruction {
             Instruction::LDM(a, b) => write!(f, "{} {a} = *{b}", "LDM".green()),
             Instruction::CMP(a, b) => write!(f, "{} {a} {b}", "CMP".green()),
             Instruction::JMP(a, b) => {
-                // TODO: access the flag constants here and re-add the flag description
                 write!(f, "{} {} {b}", "JMP".green(), a.to_string().blue())
             }
             Instruction::SYS(a, b) => {
-                write!(f, "{} {} {b}", "SYS".green(), format!("{a:#02x}").blue())
+                write!(
+                    f,
+                    "{} {} {}",
+                    "SYS".green(),
+                    format!("{a:#02x}").blue(),
+                    b.map(|r| r.to_string().into()).unwrap_or("NONE".black())
+                )
             }
         }
     }

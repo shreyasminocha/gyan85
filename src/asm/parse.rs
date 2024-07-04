@@ -185,7 +185,7 @@ fn parse_jmp(asm: &str) -> IResult<&str, Instruction> {
 fn parse_sys(asm: &str) -> IResult<&str, Instruction> {
     let (remaining, (syscall, reg)) = delimited(
         tuple((tag("SYS"), space1)),
-        separated_pair(parse_int_literal, space1, parse_register),
+        separated_pair(parse_int_literal, space1, parse_optional_register),
         tuple((space0, alt((line_ending, eof)))),
     )(asm)?;
 
@@ -423,13 +423,13 @@ mod tests {
     #[test]
     fn test_sys() {
         let (_, instruction) = parse_asm_instruction("SYS 0x20 d").unwrap();
-        assert_eq!(instruction, Instruction::SYS(0x20, Register::D));
+        assert_eq!(instruction, Instruction::SYS(0x20, Some(Register::D)));
     }
 
     #[test]
     fn test_sys_none_operand() {
-        // TODO: change if/when SYS ever supports NONE args
-        assert!(parse_asm_instruction("SYS 0x8 NONE").is_err());
+        let (_, instruction) = parse_asm_instruction("SYS 0x8 NONE").unwrap();
+        assert_eq!(instruction, Instruction::SYS(0x8, None));
     }
 
     #[test]

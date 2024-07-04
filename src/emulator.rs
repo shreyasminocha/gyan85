@@ -10,7 +10,7 @@ use std::{
     time::Duration,
 };
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 use crate::yan85::{
     constants::{Constants, Decodable, Encodable},
@@ -161,7 +161,7 @@ impl Emulator {
 
     /// Emulates a `SYS` instruction, performing a Yan85 system call and placing the return value in
     /// `register`.
-    fn emulate_sys(&mut self, syscall: u8, register: Register) -> Result<()> {
+    fn emulate_sys(&mut self, syscall: u8, register: Option<Register>) -> Result<()> {
         let syscall = Syscall::decode(syscall, self.constants)?;
 
         let a = self.registers[Register::A];
@@ -177,7 +177,12 @@ impl Emulator {
             Syscall::Exit => self.syscall_exit(a),
         };
 
-        self.registers[register] = return_value?;
+        if let Some(register) = register {
+            self.registers[register] = return_value?;
+        } else {
+            bail!("the \"NONE\" argument is supported only for syscalls that don't return")
+        }
+
         Ok(())
     }
 

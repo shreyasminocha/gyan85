@@ -129,8 +129,20 @@ mod tests {
     fn test_assemble_sys() {
         let consts = Constants::default();
         assert_eq!(
-            assemble_instruction(&Instruction::SYS(consts.syscall.WRITE, Reg::D), consts),
+            assemble_instruction(
+                &Instruction::SYS(consts.syscall.WRITE, Some(Reg::D)),
+                consts
+            ),
             [consts.opcode.SYS, consts.syscall.WRITE, consts.register.D]
+        )
+    }
+
+    #[test]
+    fn test_assemble_sys_none_operand() {
+        let consts = Constants::default();
+        assert_eq!(
+            assemble_instruction(&Instruction::SYS(consts.syscall.EXIT, None), consts),
+            [consts.opcode.SYS, consts.syscall.EXIT, 0]
         )
     }
 }

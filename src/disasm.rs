@@ -44,7 +44,10 @@ fn disassemble_instruction(bytes: [u8; 3], constants: Constants) -> Result<Instr
         _ if op == o.LDM => Ok(Instruction::LDM(a_register?, b_register?)),
         _ if op == o.CMP => Ok(Instruction::CMP(a_register?, b_register?)),
         _ if op == o.JMP => Ok(Instruction::JMP(Flags::decode(a, constants)?, b_register?)),
-        _ if op == o.SYS => Ok(Instruction::SYS(a, b_register?)),
+        _ if op == o.SYS => Ok(Instruction::SYS(
+            a,
+            Option::<Register>::decode(b, constants)?,
+        )),
         _ => bail!("Invalid opcode: {op:#02x}"),
     }
 }
@@ -172,7 +175,16 @@ mod tests {
                 consts
             )
             .unwrap(),
-            Instruction::SYS(consts.syscall.WRITE, Reg::D),
+            Instruction::SYS(consts.syscall.WRITE, Some(Reg::D)),
+        );
+    }
+
+    #[test]
+    fn test_disassemble_sys_none_operand() {
+        let consts = Constants::default();
+        assert_eq!(
+            disassemble_instruction([consts.opcode.SYS, consts.syscall.EXIT, 0], consts).unwrap(),
+            Instruction::SYS(consts.syscall.EXIT, None),
         );
     }
 }
