@@ -1,4 +1,7 @@
-use crate::yan85::{constants::Constants, instruction::Instruction};
+use crate::yan85::{
+    constants::{Constants, Encodable},
+    instruction::Instruction,
+};
 
 /// Assembles the given instructions, converting them into bytes.
 pub fn assemble(constants: Constants, instructions: &[Instruction]) -> Vec<u8> {
@@ -14,14 +17,14 @@ fn assemble_instruction(c: Constants, instruction: &Instruction) -> [u8; 3] {
     let bo = c.byte_order;
 
     let [op, a, b] = match instruction {
-        Instruction::IMM(register, value) => [o.IMM, register.to_u8(c), *value],
-        Instruction::ADD(dest, operand) => [o.ADD, dest.to_u8(c), operand.to_u8(c)],
-        Instruction::STK(pop, push) => [o.STK, pop.to_u8(c), push.to_u8(c)],
-        Instruction::STM(dest, src) => [o.STM, dest.to_u8(c), src.to_u8(c)],
-        Instruction::LDM(dest, src) => [o.LDM, dest.to_u8(c), src.to_u8(c)],
-        Instruction::CMP(a, b) => [o.CMP, a.to_u8(c), b.to_u8(c)],
-        Instruction::JMP(condition, register) => [o.JMP, *condition, register.to_u8(c)],
-        Instruction::SYS(syscall, register) => [o.SYS, *syscall, register.to_u8(c)],
+        Instruction::IMM(register, value) => [o.IMM, register.encode(c), *value],
+        Instruction::ADD(dest, operand) => [o.ADD, dest.encode(c), operand.encode(c)],
+        Instruction::STK(pop, push) => [o.STK, pop.encode(c), push.encode(c)],
+        Instruction::STM(dest, src) => [o.STM, dest.encode(c), src.encode(c)],
+        Instruction::LDM(dest, src) => [o.LDM, dest.encode(c), src.encode(c)],
+        Instruction::CMP(a, b) => [o.CMP, a.encode(c), b.encode(c)],
+        Instruction::JMP(condition, register) => [o.JMP, condition.encode(c), register.encode(c)],
+        Instruction::SYS(syscall, register) => [o.SYS, *syscall, register.encode(c)],
     };
 
     let mut data = [0; 3];
@@ -95,10 +98,7 @@ mod tests {
     fn test_assemble_jmp() {
         let consts = Constants::default();
         assert_eq!(
-            assemble_instruction(
-                consts,
-                &Instruction::JMP(consts.flag.L | consts.flag.G, Reg::D)
-            ),
+            assemble_instruction(consts, &Instruction::JMP("LG".try_into().unwrap(), Reg::D)),
             [
                 consts.opcode.JMP,
                 consts.flag.L | consts.flag.G,

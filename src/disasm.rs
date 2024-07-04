@@ -1,6 +1,11 @@
 use anyhow::{bail, Result};
 
-use crate::yan85::{constants::Constants, instruction::Instruction, register::Register};
+use crate::yan85::{
+    constants::{Constants, Decodable},
+    flags::Flags,
+    instruction::Instruction,
+    register::Register,
+};
 
 /// Attempts to convert the given bytes to Yan85 instructions.
 pub fn disassemble(constants: Constants, bytes: Vec<u8>) -> Result<Vec<Instruction>> {
@@ -25,8 +30,8 @@ fn disassemble_instruction(constants: Constants, bytes: [u8; 3]) -> Result<Instr
     let a = bytes[bo.a as usize];
     let b = bytes[bo.b as usize];
 
-    let a_register = Register::try_from(a, constants);
-    let b_register = Register::try_from(b, constants);
+    let a_register = Register::decode(a, constants);
+    let b_register = Register::decode(b, constants);
 
     match op {
         _ if op == o.IMM => Ok(Instruction::IMM(a_register?, b)),
@@ -35,7 +40,7 @@ fn disassemble_instruction(constants: Constants, bytes: [u8; 3]) -> Result<Instr
         _ if op == o.STM => Ok(Instruction::STM(a_register?, b_register?)),
         _ if op == o.LDM => Ok(Instruction::LDM(a_register?, b_register?)),
         _ if op == o.CMP => Ok(Instruction::CMP(a_register?, b_register?)),
-        _ if op == o.JMP => Ok(Instruction::JMP(a, b_register?)),
+        _ if op == o.JMP => Ok(Instruction::JMP(Flags::decode(a, constants)?, b_register?)),
         _ if op == o.SYS => Ok(Instruction::SYS(a, b_register?)),
         _ => bail!("Invalid opcode: {op:#02x}"),
     }
@@ -133,7 +138,7 @@ mod tests {
                 ]
             )
             .unwrap(),
-            Instruction::JMP(consts.flag.L | consts.flag.G, Reg::D),
+            Instruction::JMP("LG".try_into().unwrap(), Reg::D),
         );
     }
 

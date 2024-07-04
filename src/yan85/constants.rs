@@ -1,18 +1,33 @@
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 /// Instruction encoding specification that varies from level to level.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Constants {
     /// The byte order of the instruction 3-tuple.
-    pub byte_order: ByteOrder,
+    pub byte_order: ByteOrderConstants,
     /// The opcode constants.
-    pub opcode: Opcode,
+    pub opcode: OpcodeConstants,
     /// The register constants.
-    pub register: Register,
+    pub register: RegisterConstants,
     /// The syscall numbers.
-    pub syscall: Syscall,
+    pub syscall: SyscallConstants,
     /// The flag constants.
-    pub flag: Flag,
+    pub flag: FlagConstants,
+}
+
+/// Encodable to a byte with the constants dictionary as context.
+pub trait Encodable {
+    /// Encodes the struct to a byte.
+    fn encode(&self, constants: Constants) -> u8;
+}
+
+/// Decodable from a byte with the constants dictionary as context.
+pub trait Decodable {
+    /// Decodes the struct from a byte.
+    fn decode(value: u8, constants: Constants) -> Result<Self>
+    where
+        Self: std::marker::Sized;
 }
 
 /// Specification of the encoding order of the instruction 3-tuple.
@@ -22,12 +37,12 @@ pub struct Constants {
 /// # Examples
 ///
 /// ```
-/// use gyan85::yan85::constants::ByteOrder;
+/// use gyan85::yan85::constants::ByteOrderConstants;
 ///
-/// let byte_order = ByteOrder { op: 0, a: 1, b: 2 };
+/// let byte_order = ByteOrderConstants { op: 0, a: 1, b: 2 };
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct ByteOrder {
+pub struct ByteOrderConstants {
     /// Index of the byte corresponding to the opcode.
     pub op: u8,
     /// Index of the byte corresponding to the first operand.
@@ -36,7 +51,7 @@ pub struct ByteOrder {
     pub b: u8,
 }
 
-impl Default for ByteOrder {
+impl Default for ByteOrderConstants {
     fn default() -> Self {
         Self { op: 0, a: 1, b: 2 }
     }
@@ -45,7 +60,7 @@ impl Default for ByteOrder {
 /// The constants associated with each opcode.
 #[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Opcode {
+pub struct OpcodeConstants {
     /// The constant for the IMM opcode.
     pub IMM: u8,
     /// The constant for the ADD opcode.
@@ -64,7 +79,7 @@ pub struct Opcode {
     pub SYS: u8,
 }
 
-impl Default for Opcode {
+impl Default for OpcodeConstants {
     fn default() -> Self {
         Self {
             IMM: 0x1,
@@ -82,7 +97,7 @@ impl Default for Opcode {
 /// The constants associated with each register.
 #[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Register {
+pub struct RegisterConstants {
     /// The constant for the "a" register.
     pub A: u8,
     /// The constant for the "b" register.
@@ -99,7 +114,7 @@ pub struct Register {
     pub F: u8,
 }
 
-impl Default for Register {
+impl Default for RegisterConstants {
     fn default() -> Self {
         Self {
             A: 0x1,
@@ -116,7 +131,7 @@ impl Default for Register {
 /// The syscall numbers associated with each syscall.
 #[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Syscall {
+pub struct SyscallConstants {
     /// The syscall number for the `OPEN` syscall.
     pub OPEN: u8,
     /// The syscall number for the `READ_CODE` syscall.
@@ -131,7 +146,7 @@ pub struct Syscall {
     pub EXIT: u8,
 }
 
-impl Default for Syscall {
+impl Default for SyscallConstants {
     fn default() -> Self {
         Self {
             OPEN: 0x1,
@@ -147,7 +162,7 @@ impl Default for Syscall {
 /// The constants associated with each flag.
 #[allow(non_snake_case)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Flag {
+pub struct FlagConstants {
     /// The constant for the "less than" flag.
     pub L: u8,
     /// The constant for the "greater than" flag.
@@ -160,7 +175,7 @@ pub struct Flag {
     pub Z: u8,
 }
 
-impl Default for Flag {
+impl Default for FlagConstants {
     fn default() -> Self {
         Self {
             L: 0x1,

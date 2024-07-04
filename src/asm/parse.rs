@@ -4,7 +4,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{digit1, hex_digit1, line_ending, multispace0, space0, space1},
     combinator::{all_consuming, eof, value},
-    multi::many0,
+    multi::{many0, many1},
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
@@ -147,18 +147,29 @@ fn parse_cmp(asm: &str) -> IResult<&str, Instruction> {
 
 /// Parses a `JMP` (jump) instruction.
 ///
-/// Syntax: `JMP <int literal> <reg>`
+/// Syntax: `JMP [LGENZ]+ <reg>`
 ///
 /// Examples:
 ///
-/// - `JMP 8 d`
-/// - `JMP 1 d`
+/// - `JMP LE d`
+/// - `JMP Z d`
 fn parse_jmp(asm: &str) -> IResult<&str, Instruction> {
     let (remaining, (condition, reg)) = delimited(
         tuple((tag("JMP"), space1)),
-        separated_pair(parse_int_literal, space1, parse_register),
+        separated_pair(
+            // note that this allows repeated flag letters, e.g. "LZL"
+            many1(alt((tag("L"), tag("G"), tag("E"), tag("N"), tag("Z")))),
+            space1,
+            parse_register,
+        ),
         tuple((space0, alt((line_ending, eof)))),
     )(asm)?;
+
+    let condition = condition
+        .join("")
+        .as_str()
+        .try_into()
+        .expect("the parser only allows valid flag letters");
 
     Ok((remaining, Instruction::JMP(condition, reg)))
 }
@@ -248,6 +259,8 @@ fn parse_int_literal_hex(input: &str) -> IResult<&str, u8> {
 
 #[cfg(test)]
 mod tests {
+    use crate::yan85::flags::Flags;
+
     use super::*;
 
     #[test]
@@ -367,8 +380,20 @@ mod tests {
 
     #[test]
     fn test_jmp() {
-        let (_, instruction) = parse_asm_instruction("JMP 8 d").unwrap();
-        assert_eq!(instruction, Instruction::JMP(8, Register::D));
+        let (_, instruction) = parse_asm_instruction("JMP LZ d").unwrap();
+        assert_eq!(
+            instruction,
+            Instruction::JMP(
+                Flags {
+                    less_than: true,
+                    greater_than: false,
+                    equal: false,
+                    not_equal: false,
+                    zeroes: true
+                },
+                Register::D
+            )
+        );
     }
 
     #[test]

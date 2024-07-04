@@ -13,8 +13,14 @@ use std::{
 use anyhow::Result;
 
 use crate::yan85::{
-    constants::Constants, instruction::Instruction, memory::Memory, register::Register,
-    registers::Registers, stack::Stack,
+    constants::{Constants, Decodable, Encodable},
+    flags::Flags,
+    instruction::Instruction,
+    memory::Memory,
+    register::Register,
+    registers::Registers,
+    stack::Stack,
+    syscall::Syscall,
 };
 
 /// A Yan85 emulator.
@@ -80,7 +86,7 @@ impl Emulator {
         Ok(())
     }
 
-    /// Emulates a `STK` instruction, pushing `push`, and popping `pop` unless either
+    /// Emulates a `STK` instruction, pushing `push`, and popping into `pop` unless either
     /// [`Register::None`].
     fn emulate_stk(&mut self, pop: Register, push: Register) -> Result<()> {
         if push != Register::None {
@@ -113,32 +119,40 @@ impl Emulator {
     /// Emulates a `CMP` instruction, comparing `a` and `b` and assigning a representation of their
     /// relationship to register F.
     fn emulate_cmp(&mut self, a: Register, b: Register) -> Result<()> {
-        let Constants { flag: f, .. } = self.constants;
-
         let a = self.registers[a];
         let b = self.registers[b];
 
-        let mut flags = 0;
+        let mut flags = Flags::default();
 
         match a.cmp(&b) {
-            cmp::Ordering::Less => flags |= f.L | f.N,
-            cmp::Ordering::Greater => flags |= f.G | f.N,
-            cmp::Ordering::Equal => flags |= f.E,
+            cmp::Ordering::Less => {
+                flags.less_than = true;
+                flags.not_equal = true;
+            }
+            cmp::Ordering::Greater => {
+                flags.greater_than = true;
+                flags.not_equal = true;
+            }
+            cmp::Ordering::Equal => {
+                flags.equal = true;
+            }
         }
 
         if (a == 0) && (b == 0) {
-            flags |= f.Z;
+            flags.zeroes = true;
         }
 
-        self.registers[Register::F] = flags;
+        self.registers[Register::F] = flags.encode(self.constants);
         Ok(())
     }
 
     /// Emulates a `JMP` instruction, comparing the conditions encoded in `condition` to those in
     /// register F, jumping to the instruction referenced by `register` if any of the conditions
     /// match.
-    fn emulate_jmp(&mut self, condition: u8, register: Register) -> Result<()> {
-        if self.registers[Register::F] & condition != 0 {
+    fn emulate_jmp(&mut self, condition: Flags, register: Register) -> Result<()> {
+        let comparison_result = Flags::decode(self.registers[Register::F], self.constants)?;
+
+        if comparison_result.does_match(&condition) {
             self.registers[Register::I] = self.registers[register];
         }
 
@@ -148,20 +162,19 @@ impl Emulator {
     /// Emulates a `SYS` instruction, performing a Yan85 system call and placing the return value in
     /// `register`.
     fn emulate_sys(&mut self, syscall: u8, register: Register) -> Result<()> {
-        let Constants { syscall: s, .. } = self.constants;
+        let syscall = Syscall::decode(syscall, self.constants)?;
 
         let a = self.registers[Register::A];
         let b = self.registers[Register::B];
         let c = self.registers[Register::C];
 
         let return_value = match syscall {
-            _ if syscall == s.OPEN => self.syscall_open(a),
-            _ if syscall == s.READ_CODE => self.syscall_read_code(a, b, c),
-            _ if syscall == s.READ_MEMORY => self.syscall_read_memory(a, b, c),
-            _ if syscall == s.WRITE => self.syscall_write(a, b, c),
-            _ if syscall == s.SLEEP => self.syscall_sleep(a),
-            _ if syscall == s.EXIT => self.syscall_exit(a),
-            _ => panic!("unsupported syscall: {syscall:#02x}"),
+            Syscall::Open => self.syscall_open(a),
+            Syscall::ReadCode => self.syscall_read_code(a, b, c),
+            Syscall::ReadMemory => self.syscall_read_memory(a, b, c),
+            Syscall::Write => self.syscall_write(a, b, c),
+            Syscall::Sleep => self.syscall_sleep(a),
+            Syscall::Exit => self.syscall_exit(a),
         };
 
         self.registers[register] = return_value?;
@@ -471,7 +484,7 @@ mod tests {
         let mut emulator = Emulator::new(
             consts,
             vec![
-                Instruction::JMP(f.L, Register::A),
+                Instruction::JMP("L".try_into().unwrap(), Register::A),
                 Instruction::ADD(Register::C, Register::C),
                 Instruction::ADD(Register::C, Register::C),
             ],
@@ -493,7 +506,7 @@ mod tests {
         let mut emulator = Emulator::new(
             consts,
             vec![
-                Instruction::JMP(f.L, Register::A),
+                Instruction::JMP("L".try_into().unwrap(), Register::A),
                 Instruction::ADD(Register::C, Register::C),
                 Instruction::ADD(Register::C, Register::C),
             ],

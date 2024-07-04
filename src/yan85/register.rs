@@ -2,7 +2,7 @@ use anyhow::{anyhow, Result};
 use colored::Colorize;
 use std::fmt;
 
-use crate::yan85::constants::Constants;
+use super::constants::{Constants, Decodable, Encodable};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(u8)]
@@ -27,37 +27,33 @@ pub enum Register {
     None,
 }
 
-impl Register {
-    /// Attempts to convert an 8-bit integer to a register using the given encoding constants.
-    pub fn try_from(register: u8, constants: Constants) -> Result<Register> {
-        let r = constants.register;
-
-        match register {
-            _ if register == r.A => Ok(Register::A),
-            _ if register == r.B => Ok(Register::B),
-            _ if register == r.C => Ok(Register::C),
-            _ if register == r.D => Ok(Register::D),
-            _ if register == r.S => Ok(Register::S),
-            _ if register == r.I => Ok(Register::I),
-            _ if register == r.F => Ok(Register::F),
-            0x0 => Ok(Register::None),
-            _ => Err(anyhow!("Invalid register: {register}")),
+impl Encodable for Register {
+    fn encode(&self, c: Constants) -> u8 {
+        match self {
+            Register::A => c.register.A,
+            Register::B => c.register.B,
+            Register::C => c.register.C,
+            Register::D => c.register.D,
+            Register::S => c.register.S,
+            Register::I => c.register.I,
+            Register::F => c.register.F,
+            Register::None => 0x0,
         }
     }
+}
 
-    /// Converts the register to an 8-bit integer using the given encoding constants.
-    pub fn to_u8(self, constants: Constants) -> u8 {
-        let r = constants.register;
-
-        match self {
-            Register::A => r.A,
-            Register::B => r.B,
-            Register::C => r.C,
-            Register::D => r.D,
-            Register::S => r.S,
-            Register::I => r.I,
-            Register::F => r.F,
-            Register::None => 0x0,
+impl Decodable for Register {
+    fn decode(value: u8, c: Constants) -> Result<Self> {
+        match value {
+            _ if value == c.register.A => Ok(Register::A),
+            _ if value == c.register.B => Ok(Register::B),
+            _ if value == c.register.C => Ok(Register::C),
+            _ if value == c.register.D => Ok(Register::D),
+            _ if value == c.register.S => Ok(Register::S),
+            _ if value == c.register.I => Ok(Register::I),
+            _ if value == c.register.F => Ok(Register::F),
+            0x0 => Ok(Register::None),
+            _ => Err(anyhow!("Invalid register: {value:#02x}")),
         }
     }
 }

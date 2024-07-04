@@ -1,13 +1,10 @@
 use colored::Colorize;
 use std::fmt;
 
-use crate::yan85::register::Register;
+use super::{flags::Flags, register::Register};
 
 /// Yan85 syscall number.
 pub type SysCall = u8;
-
-/// Jump condition specifier.
-pub type Condition = u8;
 
 /// Mutable register.
 pub type MutRegister = Register;
@@ -40,7 +37,7 @@ pub enum Instruction {
     CMP(Register, Register),
     /// Jumps to the instruction referenced by a register if the specified condition is met by the
     /// value in the "flag" register.
-    JMP(Condition, Register),
+    JMP(Flags, Register),
     /// Syscall instruction.
     SYS(SysCall, Register),
 }

@@ -70,7 +70,7 @@ fn test_cmp() {
 #[test]
 fn test_jmp() {
     let consts = Constants::default();
-    let instructions = vec![Instruction::JMP(consts.flag.L, Register::A)];
+    let instructions = vec![Instruction::JMP("L".try_into().unwrap(), Register::A)];
     let bytes = assemble(consts, &instructions);
 
     assert_eq!(disassemble(consts, bytes).unwrap(), instructions);
